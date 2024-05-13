@@ -4,18 +4,22 @@ namespace MIPS_Simulator1
 {
     public partial class Form1 : Form
     {
-        private Dictionary<string, string> registers = Registers.RegisterMap;
+        //private Dictionary<string, string> registers = Registers.RegisterMap;
+        private MIPS mips;
+        private Dictionary<string, string> registers;
         public Form1()
         {
             InitializeComponent();
+            mips = new MIPS();
+            registers = Registers.RegisterMap;
+            SaveRegistersToTable();
+            UpdateInstructionMemoryTable(Array.Empty<string>(), new List<string>());
+            UpdateDataMemoryTable(mips.DataMemory);
         }
 
         private void button1_Click(object sender, EventArgs e)//run
         {
-            // TextBox'tan assembly kodunu oku
             string assemblyCode = textBox1.Text;
-
-            // Derleme iþlemini gerçekleþtir
             string[] assemblyCodeArray = assemblyCode.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
             CompileAssembly(assemblyCodeArray);
         }
@@ -49,17 +53,14 @@ namespace MIPS_Simulator1
         }
         private void SaveRegistersToTable()//register table
         {
-            // Temizleme iþlemi, eðer tabloda varsa mevcut kayýtlarý kaldýrýr
             dataGridView1.Rows.Clear();
 
-            // Registerlarý tabloya ekler
-            foreach (var register in registers)
+            foreach (var register in Registers.RegisterMap)
             {
                 string name = register.Key;
                 string number = name.Substring(1); // "r" veya "s" karakterini kaldýrýr
-                string value = "0*00000000"; // Baþlangýç deðerleri isteðe baðlý olarak atanabilir
+                string value = "0x" + register.Value; // String olarak makinadaki deðeri alýr
 
-                // Yeni bir satýr oluþtur ve kayýtlarý tabloya ekle
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView1);
                 row.Cells[0].Value = name;
@@ -92,48 +93,46 @@ namespace MIPS_Simulator1
 
         private void DisplayMachineCode(List<string> machineCode)// textbox
         {
-            // Temizleme iþlemi, eðer tabloda varsa mevcut kayýtlarý kaldýrýr
-            dataGridView1.Rows.Clear();
+            dataGridView2.Rows.Clear();
 
-            // Derlenmiþ makine kodunu tabloya ekle
-            foreach (string code in machineCode)
+            for (int i = 0; i < machineCode.Count; i++)
             {
-                // Yeni bir satýr oluþtur ve makine kodunu tabloya ekle
+                string instruction = machineCode[i];
+                string address = "0x" + (i * 4).ToString("X8");
+                string source = textBox1.Lines[i];
+
                 DataGridViewRow row = new DataGridViewRow();
-                row.CreateCells(dataGridView1);
-                row.Cells[0].Value = code;
-                dataGridView1.Rows.Add(row);
+                row.CreateCells(dataGridView2);
+                row.Cells[0].Value = address;
+                row.Cells[1].Value = instruction;
+                row.Cells[2].Value = source;
+                dataGridView2.Rows.Add(row);
             }
         }
 
         private void button2_Click(object sender, EventArgs e)//IM
         {
-            // TextBox'tan assembly kodunu oku
             string[] assemblyCode = textBox1.Lines;
-
-            // Varsayýlan makine kodu oluþtur
             List<string> defaultMachineCode = new List<string>();
+
             for (int i = 0; i < assemblyCode.Length; i++)
             {
                 defaultMachineCode.Add("0x00000000");
             }
 
-            // Instruction Memory tablosunu güncelle (varsayýlan deðerlerle)
             UpdateInstructionMemoryTable(assemblyCode, defaultMachineCode);
         }
 
         private void UpdateInstructionMemoryTable(string[] assemblyCode, List<string> machineCode)
         {
-            // Temizleme iþlemi, eðer tabloda varsa mevcut kayýtlarý kaldýrýr
             dataGridView2.Rows.Clear();
 
-            // Assembly kodunu ve makine kodunu tabloya ekle
             for (int i = 0; i < assemblyCode.Length; i++)
             {
                 string instruction = assemblyCode[i];
-                string address = "0x" + (i * 4).ToString("X8"); // Adres
-                string code = machineCode[i]; // Makine kodu
-                string source = instruction; // Kaynak
+                string address = "0x" + (i * 4).ToString("X8");
+                string code = machineCode[i];
+                string source = instruction;
 
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView2);
@@ -156,37 +155,75 @@ namespace MIPS_Simulator1
         }
         private void UpdateDataMemoryTable(int[] dataMemory)
         {
-            // Temizleme iþlemi, eðer tabloda varsa mevcut kayýtlarý kaldýrýr
             dataGridView3.Rows.Clear();
 
-            // Adres ve deðer baþlýklarýný ekle
-            dataGridView3.Columns.Add("Address", "Address");
-            for (int i = 0; i < 8; i++)
-            {
-                dataGridView3.Columns.Add("Value+" + (i * 4).ToString("X2"), "Value+" + (i * 4).ToString("X2"));
-            }
-
-            // Data Memory tablosunu güncelle
-            for (int i = 0; i < dataMemory.Length; i += 8)
+            for (int i = 0; i < dataMemory.Length; i += 4) // i'yi 4'er 4'er artýrýn
             {
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView3);
-                row.Cells[0].Value = "0x" + (i * 4).ToString("X8"); // Adresi ekle
-                for (int j = 0; j < 8; j++)
+                row.Cells[0].Value = "0x" + (i * 4).ToString("X8");
+
+                for (int j = 0; j < 4; j++) // j'yi 4'e ayarlayýn
                 {
-                    row.Cells[j + 1].Value = "0x" + dataMemory[i + j].ToString("X8"); // Deðerleri ekle
+                    int index = i + j * 4; // Hücre indeksini hesaplayýn
+                    if (index < dataMemory.Length) // Dizinin boyutunu kontrol et
+                    {
+                        row.Cells[j + 1].Value = "0x" + dataMemory[index].ToString("X8");
+                    }
+                    else
+                    {
+                        row.Cells[j + 1].Value = "0x" + "00000000"; // Dizinin sonunu aþtýysanýz boþ deðer ekle
+                    }
                 }
+
                 dataGridView3.Rows.Add(row);
             }
         }
 
+
+
         private void button3_Click(object sender, EventArgs e)
         {
-            // TextBox'tan veri belleði içeriðini oku
             string[] dataMemory = textBox1.Lines;
 
-            // Veri belleðini güncelle
-            //UpdateDataMemoryTable(dataMemory);
+            if (dataMemory.Length != mips.DataMemory.Length)
+            {
+                MessageBox.Show("Veri belleði giriþi, beklenen boyuta sahip deðil.");
+                return;
+            }
+
+            if (!IsValidDataMemoryInput(dataMemory))
+            {
+                MessageBox.Show("Geçersiz veri belleði giriþi.");
+                return;
+            }
+
+            mips.DataMemory = ConvertDataMemory(dataMemory);
+            UpdateDataMemoryTable(mips.DataMemory);
+            MessageBox.Show("Veri belleði güncellendi.");
+        }
+        private bool IsValidDataMemoryInput(string[] dataMemory)
+        {
+            foreach (string data in dataMemory)
+            {
+                if (!int.TryParse(data, System.Globalization.NumberStyles.HexNumber, null, out _))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private int[] ConvertDataMemory(string[] dataMemory)
+        {
+            int[] memory = new int[dataMemory.Length];
+
+            for (int i = 0; i < dataMemory.Length; i++)
+            {
+                memory[i] = Convert.ToInt32(dataMemory[i], 16);
+            }
+
+            return memory;
         }
     }
 }

@@ -27,14 +27,29 @@ namespace MIPS_Simulator1
 		private int imm;
 		private int target;
 
-		public MIPS()
+        // Registers dizisine erişim için özellik
+        public int[] Registers
+        {
+            get { return reg; }
+            set { reg = value; }
+        }
+
+
+        // DataMemory özelliği
+        public int[] DataMemory
+        {
+            get { return DM; }
+            set { DM = value; }
+        }
+
+        public MIPS()
 		{
 			reg = new int[32];
 			Array.Fill(reg, 0);
-			IM = new int[256];
-			IM_asm = new string[256];
+			IM = new int[1024];
+			IM_asm = new string[1024];
 			IM_len = 0;
-			DM = new int[256];
+			DM = new int[1024];
 			Array.Fill(DM, 0);
 			pc = 0;
 			hi = 0;
