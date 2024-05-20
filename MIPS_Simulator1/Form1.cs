@@ -58,13 +58,14 @@ namespace MIPS_Simulator1
             foreach (var register in Registers.RegisterMap)
             {
                 string name = register.Key;
-                string number = name.Substring(1); // "r" veya "s" karakterini kaldýrýr
+                string binaryNumber = register.Value;
+                int number = Convert.ToInt32(binaryNumber, 2);
                 string value = "0x" + register.Value; // String olarak makinadaki deðeri alýr
 
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView1);
                 row.Cells[0].Value = name;
-                row.Cells[1].Value = number;
+                row.Cells[1].Value = number.ToString();
                 row.Cells[2].Value = value;
                 dataGridView1.Rows.Add(row);
             }
@@ -82,7 +83,7 @@ namespace MIPS_Simulator1
                     machineCode.Add(hexCode);
                 }
 
-                // Derlenmiþ makine kodunu göster
+                // Derlenmiþ makine kodunu 
                 DisplayMachineCode(machineCode);
             }
             catch (Exception ex)
@@ -157,22 +158,22 @@ namespace MIPS_Simulator1
         {
             dataGridView3.Rows.Clear();
 
-            for (int i = 0; i < dataMemory.Length; i += 4) // i'yi 4'er 4'er artýrýn
+            for (int i = 0; i < dataMemory.Length; i += 4) 
             {
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView3);
                 row.Cells[0].Value = "0x" + (i * 4).ToString("X8");
 
-                for (int j = 0; j < 4; j++) // j'yi 4'e ayarlayýn
+                for (int j = 0; j < 4; j++) 
                 {
-                    int index = i + j * 4; // Hücre indeksini hesaplayýn
-                    if (index < dataMemory.Length) // Dizinin boyutunu kontrol et
+                    int index = i + j * 4; 
+                    if (index < dataMemory.Length) 
                     {
                         row.Cells[j + 1].Value = "0x" + dataMemory[index].ToString("X8");
                     }
                     else
                     {
-                        row.Cells[j + 1].Value = "0x" + "00000000"; // Dizinin sonunu aþtýysanýz boþ deðer ekle
+                        row.Cells[j + 1].Value = "0x" + "00000000"; 
                     }
                 }
 

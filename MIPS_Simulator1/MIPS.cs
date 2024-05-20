@@ -27,7 +27,7 @@ namespace MIPS_Simulator1
 		private int imm;
 		private int target;
 
-        // Registers dizisine erişim için özellik
+        // Registers dizisine erişim için 
         public int[] Registers
         {
             get { return reg; }
@@ -35,7 +35,7 @@ namespace MIPS_Simulator1
         }
 
 
-        // DataMemory özelliği
+        // DataMemory 
         public int[] DataMemory
         {
             get { return DM; }
@@ -46,10 +46,10 @@ namespace MIPS_Simulator1
 		{
 			reg = new int[32];
 			Array.Fill(reg, 0);
-			IM = new int[1024];
-			IM_asm = new string[1024];
+			IM = new int[256];
+			IM_asm = new string[256];
 			IM_len = 0;
-			DM = new int[1024];
+			DM = new int[256];
 			Array.Fill(DM, 0);
 			pc = 0;
 			hi = 0;
@@ -120,92 +120,92 @@ namespace MIPS_Simulator1
 				case "000000": // R-type instruction
 					switch (funct)
 					{
-						case "100000": // ADD
+						case "100000": 
 							Add();
 							break;
-						case "100010": // SUB
+						case "100010": 
 							Sub();
 							break;
-						case "100100": // AND
+						case "100100": 
 							And();
 							break;
-						case "100101": // OR
+						case "100101": 
 							Or();
 							break;
-						case "100110": // XOR
+						case "100110": 
 							Xor();
 							break;
-						case "101010": // SLT
+						case "101010": 
 							Slt();
 							break;
-						case "001000": // JR
+						case "001000": 
 							Jr();
 							break;
-						case "000000": // SLL
+						case "000000": 
 							Sll();
 							break;
-						case "000010": // SRL
+						case "000010": 
 							Srl();
 							break;
-						case "000011": // SRA
+						case "000011": 
 							Sra();
 							break;
-						case "010000": // MFHI
+						case "010000": 
 							Mfhi();
 							break;
-						case "010010": // MFLO
+						case "010010": 
 							Mflo();
 							break;
-						case "011000": // MULT
+						case "011000": 
 							Mult();
 							break;
-						case "011010": // DIV
+						case "011010": 
 							Div();
 							break;
 						default:
 							throw new Exception($"Unsupported function code: {funct}");
 					}
 					break;
-				case "000100": // BEQ
+				case "000100": 
 					Beq();
 					break;
-				case "000101": // BNE
+				case "000101": 
 					Bne();
 					break;
-				case "001000": // ADDI
+				case "001000": 
 					Addi();
 					break;
-				case "001010": // SLTI
+				case "001010": 
 					Slti();
 					break;
-				case "001100": // ANDI
+				case "001100": 
 					Andi();
 					break;
-				case "001101": // ORI
+				case "001101": 
 					Ori();
 					break;
-				case "001111": // LUI
+				case "001111": 
 					Lui();
 					break;
-				case "100011": // LW
+				case "100011": 
 					Lw();
 					break;
-				case "100000": // LB
+				case "100000": 
 					Lb();
 					break;
-				case "101011": // SW
+				case "101011": 
 					Sw();
 					break;
-				case "101000": // SB
+				case "101000": 
 					Sb();
 					break;
-				case "111000": // MULI
+				case "111000": 
 					Muli();
 					break;
-				case "000010": // J
+				case "000010": 
 					J();
 					break;
-				case "000011": // JAL
+				case "000011": 
 					Jal();
 					break;
 				default:
@@ -451,43 +451,43 @@ namespace MIPS_Simulator1
 
 		public string ToHexString(int num, int hexLen)
 		{
-			// Get the binary string representation of the number in two's complement form
+			
 			string binaryStr = ToBinString(num, hexLen * 4);
 
-			// Convert the binary string to a hexadecimal string
+			
 			string hexStr = Convert.ToInt32(binaryStr, 2).ToString("X");
 
-			// Pad the hexadecimal string with zeros to the desired length
+			
 			return hexStr.PadLeft(hexLen, '0');
 		}
 
 		public string ToBinString(int num, int binLen)
 		{
-			// Convert num to binary string
+			
 			string binaryStr = Math.Abs(num).ToString("B");
 
-			// If binaryStr is shorter than binLen, pad with zeros to the left
+			
 			binaryStr = binaryStr.PadLeft(binLen, '0');
 
-			// If num is negative, take the two's complement
+			
 			if (num < 0)
 			{
 				binaryStr = TwosComplement(binaryStr, binLen);
 			}
 
-			// Return binary string
+			
 			return binaryStr;
 		}
 
 		public string TwosComplement(string binaryStr, int length)
 		{
-			// Pad the binary string with zeros on the left to the given length
+			
 			string paddedStr = binaryStr.PadLeft(length, '0');
 
-			// Invert all bits
+			
 			string invertedStr = new string(paddedStr.Select(bit => bit == '0' ? '1' : '0').ToArray());
 
-			// Add 1 to the inverted value
+			
 			int carry = 1;
 			StringBuilder result = new StringBuilder();
 			for (int i = invertedStr.Length - 1; i >= 0; i--)
@@ -505,7 +505,7 @@ namespace MIPS_Simulator1
 				}
 			}
 
-			// Pad the result with zeros on the left to the given length
+			
 			return result.ToString().PadLeft(length, '0');
 		}
 
