@@ -7,6 +7,8 @@ namespace MIPS_Simulator1
         //private Dictionary<string, string> registers = Registers.RegisterMap;
         private MIPS mips;
         private Dictionary<string, string> registers;
+        private List<string> assemblyCode;
+
         public Form1()
         {
             InitializeComponent();
@@ -17,12 +19,13 @@ namespace MIPS_Simulator1
             UpdateDataMemoryTable(mips.DataMemory);
         }
 
-        private void button1_Click(object sender, EventArgs e)//run
+        private void button1_Click(object sender, EventArgs e) // Run button
         {
-            string assemblyCode = textBox1.Text;
-            string[] assemblyCodeArray = assemblyCode.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-            CompileAssembly(assemblyCodeArray);
+            assemblyCode = textBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None).ToList();
+            CompileAssembly(assemblyCode);
+            CompileNextAssemblyInstruction(); // Compile next instruction after running
         }
+
 
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -49,18 +52,19 @@ namespace MIPS_Simulator1
         {
             SaveRegistersToTable();
             UpdateInstructionMemoryTable(Array.Empty<string>(), new List<string>());
-            
+
         }
-        private void SaveRegistersToTable()//register table
+        private void SaveRegistersToTable()
         {
             dataGridView1.Rows.Clear();
 
-            foreach (var register in Registers.RegisterMap)
+            // Register Map'ten kayýtlarý alýrken hi, lo ve pc'yi ekleyin
+            foreach (var register in registers)
             {
                 string name = register.Key;
                 string binaryNumber = register.Value;
                 int number = Convert.ToInt32(binaryNumber, 2);
-                string value = "0x" + register.Value; // String olarak makinadaki deðeri alýr
+                string value = "0x" + register.Value; // String olarak makinadaki de?eri alýr
 
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView1);
@@ -69,30 +73,48 @@ namespace MIPS_Simulator1
                 row.Cells[2].Value = value;
                 dataGridView1.Rows.Add(row);
             }
+
+            // hi, lo ve pc kayýtlarýný ekleyin
+            dataGridView1.Rows.Add("hi", "", ""); // Boþ hücreler, çünkü hi'nin ve lo'nun deðeri 64 bitlik olabilir
+            dataGridView1.Rows.Add("lo", "", "");
+            dataGridView1.Rows.Add("pc", "", ""); // Program Sayacý
         }
-        private void CompileAssembly(string[] assemblyCode)// textbox
+
+        private void CompileAssembly(List<string> assemblyCode) // textbox
         {
             try
             {
-                List<string> machineCode = new List<string>();
-
-                foreach (string instruction in assemblyCode)
-                {
-                    string compiledInstruction = Compiler.CompileInstruction(instruction);
-                    string hexCode = Convert.ToInt32(compiledInstruction, 2).ToString("X").PadLeft(8, '0');
-                    machineCode.Add(hexCode);
-                }
-
-                // Derlenmiþ makine kodunu 
+                List<string> machineCode = Compiler.CompileToHex(assemblyCode);
                 DisplayMachineCode(machineCode);
+                UpdateDataMemoryTable(mips.DataMemory);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Hata oluþtu: " + ex.Message);
             }
         }
+        private void CompileNextAssemblyInstruction()
+        {
+            if (mips.StepCount < assemblyCode.Count)
+            {
+                mips.Step();
+                if (mips.StepCount <= assemblyCode.Count) // Burada '<=' yerine '<' kullanýlmalý
+                {
+                    string currentInstruction = assemblyCode[mips.StepCount - 1];
+                    List<string> currentInstructionList = new List<string> { currentInstruction };
+                    CompileAssembly(currentInstructionList);
+                }
+                else
+                {
+                    MessageBox.Show("Tüm talimatlar iþlendi.");
+                }
+            }
+        }
 
-        private void DisplayMachineCode(List<string> machineCode)// textbox
+
+
+
+        private void DisplayMachineCode(List<string> machineCode) // textbox
         {
             dataGridView2.Rows.Clear();
 
@@ -100,7 +122,7 @@ namespace MIPS_Simulator1
             {
                 string instruction = machineCode[i];
                 string address = "0x" + (i * 4).ToString("X8");
-                string source = textBox1.Lines[i];
+                string source = assemblyCode[i];
 
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView2);
@@ -111,7 +133,7 @@ namespace MIPS_Simulator1
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)//IM
+        private void button2_Click(object sender, EventArgs e) // IM
         {
             string[] assemblyCode = textBox1.Lines;
             List<string> defaultMachineCode = new List<string>();
@@ -158,22 +180,22 @@ namespace MIPS_Simulator1
         {
             dataGridView3.Rows.Clear();
 
-            for (int i = 0; i < dataMemory.Length; i += 4) 
+            for (int i = 0; i < dataMemory.Length; i += 4)
             {
                 DataGridViewRow row = new DataGridViewRow();
                 row.CreateCells(dataGridView3);
                 row.Cells[0].Value = "0x" + (i * 4).ToString("X8");
 
-                for (int j = 0; j < 4; j++) 
+                for (int j = 0; j < 4; j++)
                 {
-                    int index = i + j * 4; 
-                    if (index < dataMemory.Length) 
+                    int index = i + j;
+                    if (index < dataMemory.Length)
                     {
                         row.Cells[j + 1].Value = "0x" + dataMemory[index].ToString("X8");
                     }
                     else
                     {
-                        row.Cells[j + 1].Value = "0x" + "00000000"; 
+                        row.Cells[j + 1].Value = "0x00000000";
                     }
                 }
 

@@ -42,20 +42,20 @@ namespace MIPS_Simulator1
 	}
 
 	public class RTypeInstruction
-	{
-		public string Opcode { get; set; }
-		public string Funct { get; set; }
-	}
+    {
+        public string Opcode { get; set; } = string.Empty;
+        public string Funct { get; set; } = string.Empty;
+    }
 
-	public class ITypeInstruction
-	{
-		public string Opcode { get; set; }
-	}
+    public class ITypeInstruction
+    {
+        public string Opcode { get; set; } = string.Empty;
+    }
 
-	public class JTypeInstruction
-	{
-		public string Opcode { get; set; }
-	}
+    public class JTypeInstruction
+    {
+        public string Opcode { get; set; } = string.Empty;
+    }
 
 	public class Instructions
 	{
