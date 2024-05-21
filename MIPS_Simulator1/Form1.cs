@@ -34,7 +34,7 @@ namespace MIPS_Simulator1
             mips.SetIM(assemblyCode.ToArray(), binMachineCodeInts);
             mips.RunUntilEnd();
 
-            DisplayMachineCode(hexMachineCode, assemblyCode);
+            UpdateInstructionMemory(hexMachineCode, assemblyCode);
             UpdateDataMemoryTable(mips.DMToHex());
             UpdateRegistersTable();
         }
@@ -96,7 +96,7 @@ namespace MIPS_Simulator1
         }
 
 
-        private void DisplayMachineCode(List<string> hexMachineCode, List<string> assemblyCode) // UpdateInstructionMemory
+        private void UpdateInstructionMemory(List<string> hexMachineCode, List<string> assemblyCode) 
         {
             dataGridView2.Rows.Clear();
 
@@ -139,16 +139,6 @@ namespace MIPS_Simulator1
         private void InitializeDMTable()
         {
             dataGridView3.Rows.Clear();
-            dataGridView3.Columns.Clear();
-
-            // Add Address column
-            dataGridView3.Columns.Add("Address", "Address");
-
-            // Add Value columns
-            for (int i = 0; i < 4; i++)
-            {
-                dataGridView3.Columns.Add("Value_" + i, "Value (+ " + (i * 4) + ")");
-            }
 
             for (int i = 0; i < 64; i++)
             {
@@ -168,24 +158,18 @@ namespace MIPS_Simulator1
 
         private void UpdateDataMemoryTable(string[] dataMemory)
         {
-            // Clear existing data
-            for (int i = 0; i < dataGridView3.Rows.Count; i++)
-            {
-                for (int j = 1; j < dataGridView3.Columns.Count; j++)
-                {
-                    dataGridView3.Rows[i].Cells[j].Value = "0x00000000";
-                }
-            }
+            dataGridView3.Rows.Clear();
 
-            // Update data from dataMemory array
             for (int i = 0; i < dataMemory.Length; i++)
             {
+                string address = "0x" + (i * 4).ToString("X8");
                 string value = dataMemory[i];
 
-                int rowIndex = i / 4;
-                int columnIndex = (i % 4) + 1; // Offset by 1 to account for Address column
-
-                dataGridView3.Rows[rowIndex].Cells[columnIndex].Value = value;
+                DataGridViewRow row = new DataGridViewRow();
+                row.CreateCells(dataGridView3);
+                row.Cells[0].Value = address;
+                row.Cells[1].Value = value;
+                dataGridView3.Rows.Add(row);
             }
         }
 
