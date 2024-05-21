@@ -138,6 +138,13 @@ namespace MIPS_Simulator1
 
         private static string ConvertImmediateToBinary(string immediate, int length)
         {
+            // Eğer immediate bir register ise hata atmak yerine handle et
+            if (Registers.RegisterMap.ContainsKey(immediate))
+            {
+                return Registers.RegisterMap[immediate].PadLeft(length, '0');
+            }
+
+            // Sayısal değerler için mevcut işlemler
             if (immediate.StartsWith('-'))
             {
                 return Convert.ToString((int)Math.Pow(2, length) + int.Parse(immediate), 2).Substring(1).PadLeft(length, '0');
@@ -155,5 +162,6 @@ namespace MIPS_Simulator1
                 return Convert.ToString(int.Parse(immediate), 2).PadLeft(length, '0');
             }
         }
+
     }
 }

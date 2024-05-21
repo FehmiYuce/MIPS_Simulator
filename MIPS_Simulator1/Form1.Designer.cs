@@ -47,8 +47,6 @@
             Column9 = new DataGridViewTextBoxColumn();
             Column10 = new DataGridViewTextBoxColumn();
             Column11 = new DataGridViewTextBoxColumn();
-            button2 = new Button();
-            button3 = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView3).BeginInit();
@@ -197,33 +195,11 @@
             Column11.HeaderText = "Value(+c)";
             Column11.Name = "Column11";
             // 
-            // button2
-            // 
-            button2.Location = new Point(141, 278);
-            button2.Name = "button2";
-            button2.Size = new Size(75, 23);
-            button2.TabIndex = 8;
-            button2.Text = "IM";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
-            // 
-            // button3
-            // 
-            button3.Location = new Point(141, 452);
-            button3.Name = "button3";
-            button3.Size = new Size(75, 23);
-            button3.TabIndex = 9;
-            button3.Text = "DM";
-            button3.UseVisualStyleBackColor = true;
-            button3.Click += button3_Click;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(938, 623);
-            Controls.Add(button3);
-            Controls.Add(button2);
             Controls.Add(dataGridView3);
             Controls.Add(label3);
             Controls.Add(label2);
@@ -264,7 +240,5 @@
 		private DataGridViewTextBoxColumn Column9;
 		private DataGridViewTextBoxColumn Column10;
 		private DataGridViewTextBoxColumn Column11;
-		private Button button2;
-        private Button button3;
     }
 }
