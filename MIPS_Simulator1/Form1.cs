@@ -9,6 +9,8 @@ namespace MIPS_Simulator1
     {
         private MIPS mips;
         private Dictionary<string, string> registers;
+        private int currentRowIndex = -1; // Baþlangýçta iþaretçi yok
+        int currentInstructionIndex = 0; // Ýþlem sýrasýnýn baþlangýçta 0 olduðunu varsayalým
 
         public Form1()
         {
@@ -20,10 +22,16 @@ namespace MIPS_Simulator1
             InitializeIMTable();
         }
 
-        private void button1_Click(object sender, EventArgs e) // Run button
+        private void button1_Click(object sender, EventArgs e) // Load button
         {
+
+
+
             string[] assemblyCodeArray = textBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
             List<string> assemblyCode = assemblyCodeArray.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
+
+            // Etiketlerin (labels) iþlenmesi
+            assemblyCode = ProcessLabels(assemblyCode);
 
             List<string> hexMachineCode = Compiler.CompileToHex(assemblyCode);
             List<string> binMachineCode = Compiler.CompileToBin(assemblyCode);
@@ -32,11 +40,108 @@ namespace MIPS_Simulator1
             int[] binMachineCodeInts = binMachineCode.Select(bin => Convert.ToInt32(bin, 2)).ToArray();
 
             mips.SetIM(assemblyCode.ToArray(), binMachineCodeInts);
-            mips.RunUntilEnd();
 
             UpdateInstructionMemory(hexMachineCode, assemblyCode);
             UpdateDataMemoryTable(mips.DMToHex());
             UpdateRegistersTable();
+        }
+
+        private void button2_Click(object sender, EventArgs e) // Step button
+        {
+
+            mips.Step();
+            currentInstructionIndex++; // Bir sonraki iþlem sýrasýný belirle
+            UpdateRegistersTable();
+            UpdateDataMemoryTable(mips.DMToHex());
+            //HighlightRow(currentRowIndex);
+            UpdateInstructionPointer(currentInstructionIndex); // Satýrý iþaretle
+        }
+
+
+        //Satýrý belirtmek için bu metod kullanýlabilir
+        private void HighlightRow(int rowIndex)
+        {
+            if (currentRowIndex != -1)
+            {
+                // Önceki iþaretçiyi kaldýr
+                dataGridView1.Rows[currentRowIndex].DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+            }
+
+            // Yeni iþaretçiyi ayarla
+            dataGridView1.Rows[rowIndex].DefaultCellStyle.BackColor = Color.Yellow;
+            currentRowIndex = rowIndex; // Yeni iþaretçiyi güncelle
+        }
+
+        // Ýþlem sýrasýný güncelleme
+        private void UpdateInstructionPointer(int currentInstructionIndex) //Instruction Memoryi iþaretler.
+        {
+            // Önceki iþaretçiyi kaldýr
+            if (currentRowIndex != -1 && currentRowIndex < dataGridView2.Rows.Count)
+            {
+                dataGridView2.Rows[currentRowIndex].DefaultCellStyle.BackColor = dataGridView2.DefaultCellStyle.BackColor;
+            }
+
+            // Yeni iþaretçiyi ayarla
+            if (currentInstructionIndex >= 0 && currentInstructionIndex < dataGridView2.Rows.Count)
+            {
+                dataGridView2.Rows[currentInstructionIndex].DefaultCellStyle.BackColor = Color.Yellow;
+                currentRowIndex = currentInstructionIndex; // Yeni iþaretçiyi güncelle
+            }
+        }
+
+
+
+        // Etiketlerin (labels) iþlenmesi
+        private List<string> ProcessLabels(List<string> assemblyCode)
+        {
+            Dictionary<string, int> labels = new Dictionary<string, int>();
+            List<string> processedCode = new List<string>();
+            int currentAddress = 0;
+
+            // First pass: Collect labels and their addresses
+            foreach (string line in assemblyCode)
+            {
+                string trimmedLine = line.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmedLine))
+                {
+                    string[] parts = trimmedLine.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    string firstPart = parts[0];
+
+                    if (firstPart.EndsWith(":"))
+                    {
+                        string label = firstPart.Substring(0, firstPart.Length - 1);
+                        if (!labels.ContainsKey(label))
+                        {
+                            labels[label] = currentAddress;
+                        }
+                    }
+                    else
+                    {
+                        processedCode.Add(trimmedLine);
+                        currentAddress += 4; // Assuming each instruction is 4 bytes
+                    }
+                }
+            }
+
+            // Second pass: Replace labels with their addresses
+            List<string> finalCode = new List<string>();
+            foreach (string line in processedCode)
+            {
+                string replacedLine = line;
+                foreach (var label in labels)
+                {
+                    if (line.Contains(label.Key))
+                    {
+                        replacedLine = replacedLine.Replace(label.Key, label.Value.ToString());
+                    }
+                }
+                finalCode.Add(replacedLine);
+            }
+
+            // Update the Compiler's Labels dictionary
+            Compiler.SetLabels(labels);
+
+            return finalCode;
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -95,8 +200,7 @@ namespace MIPS_Simulator1
             }
         }
 
-
-        private void UpdateInstructionMemory(List<string> hexMachineCode, List<string> assemblyCode) 
+        private void UpdateInstructionMemory(List<string> hexMachineCode, List<string> assemblyCode)
         {
             dataGridView2.Rows.Clear();
 
@@ -150,7 +254,6 @@ namespace MIPS_Simulator1
 
                 for (int j = 0; j < 4; j++)
                 {
-                    int decimalId = (i * 16 + j * 4) / 4;
                     dataGridView3.Rows[i].Cells[j + 1].Value = "0x00000000";
                 }
             }
@@ -158,20 +261,69 @@ namespace MIPS_Simulator1
 
         private void UpdateDataMemoryTable(string[] dataMemory)
         {
-            dataGridView3.Rows.Clear();
+            int rowCount = dataMemory.Length; // DataMemory'den gelen veri sayýsý
 
-            for (int i = 0; i < dataMemory.Length; i++)
+            // Veri belleði tablosunun satýr sayýsýný kontrol et
+            if (dataGridView3.Rows.Count != rowCount)
             {
-                string address = "0x" + (i * 4).ToString("X8");
-                string value = dataMemory[i];
+                // Eðer tablonun satýr sayýsý, veri sayýsýna eþit deðilse, satýr sayýsýný güncelle
+                dataGridView3.Rows.Clear(); // Tabloyu temizle
 
-                DataGridViewRow row = new DataGridViewRow();
-                row.CreateCells(dataGridView3);
-                row.Cells[0].Value = address;
-                row.Cells[1].Value = value;
-                dataGridView3.Rows.Add(row);
+                // Her bir veri için bir satýr oluþtur ve tabloya ekle
+                for (int i = 0; i < rowCount; i++)
+                {
+                    string address = "0x" + (i * 4).ToString("X8"); // Adresi hesapla
+                    dataGridView3.Rows.Add(address); // Adresi tabloya ekle
+                }
+            }
+
+            // Verileri tabloya yerleþtir
+            for (int i = 0; i < rowCount; i++)
+            {
+                string[] values = dataMemory[i].Split(' '); // DataMemory'den gelen veriyi bölelim
+                for (int j = 0; j < values.Length; j++)
+                {
+                    dataGridView3.Rows[i].Cells[j + 1].Value = values[j]; // Veriyi hücrelere yerleþtir
+                }
+
+                // Eðer hücrelerin geri kalaný boþsa, onlarý da "0x00000000" ile doldur
+                for (int j = values.Length; j < 4; j++)
+                {
+                    dataGridView3.Rows[i].Cells[j + 1].Value = "0x00000000";
+                }
             }
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
+            // TextBox'ý temizle
+            textBox1.Text = "";
+
+            // DataGridView'larý temizle
+            dataGridView1.Rows.Clear();
+            dataGridView2.Rows.Clear();
+            dataGridView3.Rows.Clear();
+
+            // Ýþaretçileri ve indeksleri sýfýrla
+            currentRowIndex = -1;
+            currentInstructionIndex = 0;
+
+            // MIPS nesnesini sýfýrla
+            mips.Reset();
+
+            // Register tablosunu güncelle
+            UpdateRegistersTable();
+
+            // Talimat belleði tablosunu yeniden baþlat
+            InitializeIMTable();
+
+            // Veri belleði tablosunu yeniden baþlat
+            InitializeDMTable();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

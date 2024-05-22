@@ -119,6 +119,36 @@ namespace MIPS_Simulator1
             target = Convert.ToInt32(instr.Substring(6, 26), 2);
         }
 
+        public void Reset()
+        {
+            // Registerları sıfırla
+            Array.Fill(reg, 0);
+
+            // Instruction Memory'yi sıfırla
+            Array.Fill(IM, 0);
+            Array.Fill(IM_asm, "");
+
+            // Data Memory'yi sıfırla
+            Array.Fill(DM, 0);
+
+            // Diğer değişkenleri sıfırla
+            pc = 0;
+            hi = 0;
+            lo = 0;
+            instr = string.Empty;
+            instr_asm = string.Empty;
+            opcode = string.Empty;
+            rs = 0;
+            rt = 0;
+            rd = 0;
+            shamt = 0;
+            funct = string.Empty;
+            imm = 0;
+            target = 0;
+            stepCount = 0;
+        }
+
+
         public void Execute()
         {
             switch (opcode)
@@ -281,21 +311,50 @@ namespace MIPS_Simulator1
 
         public void Mult()
         {
-            long product = (long)reg[rs] * reg[rt];
-            hi = (int)(product >> 32);
-            lo = (int)(product & 0xFFFFFFFF);
+            long product = (long)reg[rs] * (long)reg[rt];
+            string binary = Convert.ToString(product, 2).PadLeft(64, '0');
+            lo = Convert.ToInt32(binary.Substring(32, 32), 2);
+            hi = Convert.ToInt32(binary.Substring(0, 32), 2);
         }
 
         public void Div()
         {
-            if (reg[rt] == 0)
+            int dividend = reg[rs];
+            int divisor = reg[rt];
+
+            if (divisor == 0)
             {
-                throw new Exception("Division by zero");
+                throw new DivideByZeroException("Division by zero");
             }
 
-            lo = reg[rs] / reg[rt];
-            hi = reg[rs] % reg[rt];
+            int quotient = dividend / divisor;
+            int remainder = dividend % divisor;
+
+            lo = quotient;
+            hi = remainder;
         }
+
+        //public void Mult()
+        //{
+        //    long product = (long)reg[rs] * (long)reg[rt];
+        //    lo = (int)(product & 0xFFFFFFFF); // Lower 32 bits
+        //    hi = (int)(product >> 32); // Upper 32 bits
+        //}
+
+        //public void Div()
+        //{
+        //    int dividend = reg[rs];
+        //    int divisor = reg[rt];
+
+        //    if (divisor == 0)
+        //    {
+        //        throw new DivideByZeroException("Division by zero");
+        //    }
+
+        //    lo = dividend / divisor; // Quotient
+        //    hi = dividend % divisor; // Remainder
+        //}
+
 
         public void Beq()
         {
@@ -390,13 +449,7 @@ namespace MIPS_Simulator1
             pc = target;
         }
 
-        private int signedInt(int unsigned)
-        {
-            byte[] uintBytes = BitConverter.GetBytes(unsigned);
-            int signed = BitConverter.ToInt32(uintBytes, 0);
-            return signed;
-        }
-
+        //output functions
         public string[] RegToHex()
         {
             List<string> hexArray = new List<string>();
@@ -434,9 +487,18 @@ namespace MIPS_Simulator1
             return "0x" + ToHexString(lo, 8);
         }
 
+        //bu kodda da 
         public int ParseInt32(string inputStr, int radix)
         {
             return signedInt(Convert.ToInt32(inputStr, radix));
+        }
+
+        //bu kodda hata olabilir
+        private int signedInt(int unsigned)
+        {
+            byte[] uintBytes = BitConverter.GetBytes(unsigned);
+            int signed = BitConverter.ToInt32(uintBytes, 0);
+            return signed;
         }
 
         public string SignExtend(string inputStr, int initialLen, int finalLen)

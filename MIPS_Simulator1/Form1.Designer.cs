@@ -47,6 +47,8 @@
             Column9 = new DataGridViewTextBoxColumn();
             Column10 = new DataGridViewTextBoxColumn();
             Column11 = new DataGridViewTextBoxColumn();
+            button2 = new Button();
+            button3 = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView3).BeginInit();
@@ -54,10 +56,11 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(27, 52);
+            textBox1.Location = new Point(27, 49);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(560, 219);
+            textBox1.ScrollBars = ScrollBars.Vertical;
+            textBox1.Size = new Size(589, 257);
             textBox1.TabIndex = 0;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
@@ -77,9 +80,9 @@
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3 });
             dataGridView1.GridColor = Color.Black;
-            dataGridView1.Location = new Point(593, 49);
+            dataGridView1.Location = new Point(637, 49);
             dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(333, 219);
+            dataGridView1.Size = new Size(343, 257);
             dataGridView1.TabIndex = 2;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -101,7 +104,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(593, 31);
+            label1.Location = new Point(637, 31);
             label1.Name = "label1";
             label1.Size = new Size(54, 15);
             label1.TabIndex = 3;
@@ -112,9 +115,9 @@
             // 
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView2.Columns.AddRange(new DataGridViewColumn[] { Column4, Column5, Column6 });
-            dataGridView2.Location = new Point(27, 304);
+            dataGridView2.Location = new Point(27, 327);
             dataGridView2.Name = "dataGridView2";
-            dataGridView2.Size = new Size(899, 143);
+            dataGridView2.Size = new Size(953, 135);
             dataGridView2.TabIndex = 4;
             dataGridView2.CellContentClick += dataGridView2_CellContentClick;
             // 
@@ -139,16 +142,17 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(27, 286);
+            label2.Location = new Point(27, 309);
             label2.Name = "label2";
             label2.Size = new Size(108, 15);
             label2.TabIndex = 5;
             label2.Text = "Instrucion Memory";
+            label2.Click += label2_Click;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(27, 460);
+            label3.Location = new Point(27, 465);
             label3.Name = "label3";
             label3.Size = new Size(79, 15);
             label3.TabIndex = 6;
@@ -159,9 +163,9 @@
             // 
             dataGridView3.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView3.Columns.AddRange(new DataGridViewColumn[] { Column7, Column8, Column9, Column10, Column11 });
-            dataGridView3.Location = new Point(27, 478);
+            dataGridView3.Location = new Point(27, 483);
             dataGridView3.Name = "dataGridView3";
-            dataGridView3.Size = new Size(899, 133);
+            dataGridView3.Size = new Size(953, 133);
             dataGridView3.TabIndex = 7;
             dataGridView3.CellContentClick += dataGridView3_CellContentClick;
             // 
@@ -195,11 +199,33 @@
             Column11.HeaderText = "Value(+c)";
             Column11.Name = "Column11";
             // 
+            // button2
+            // 
+            button2.Location = new Point(126, 23);
+            button2.Name = "button2";
+            button2.Size = new Size(75, 23);
+            button2.TabIndex = 8;
+            button2.Text = "Next";
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
+            // button3
+            // 
+            button3.Location = new Point(541, 23);
+            button3.Name = "button3";
+            button3.Size = new Size(75, 23);
+            button3.TabIndex = 9;
+            button3.Text = "Clear";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(938, 623);
+            ClientSize = new Size(989, 628);
+            Controls.Add(button3);
+            Controls.Add(button2);
             Controls.Add(dataGridView3);
             Controls.Add(label3);
             Controls.Add(label2);
@@ -240,5 +266,7 @@
 		private DataGridViewTextBoxColumn Column9;
 		private DataGridViewTextBoxColumn Column10;
 		private DataGridViewTextBoxColumn Column11;
+        private Button button2;
+        private Button button3;
     }
 }
