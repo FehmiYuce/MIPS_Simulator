@@ -1,21 +1,17 @@
 ﻿using MIPS_Simulator1;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-public class Compiler
+public static class Compiler
 {
-    private static Dictionary<string, int> Labels = new Dictionary<string, int>();
-
-    public static void SetLabels(Dictionary<string, int> labels)
-    {
-        Labels = labels;
-    }
-
     public static List<string> CompileToHex(List<string> assemblyCode)
     {
-        List<string> machineCode = new List<string>();
-        foreach (string instruction in assemblyCode)
+        var machineCode = new List<string>();
+        foreach (var instruction in assemblyCode)
         {
-            string compiledInstruction = CompileInstruction(instruction);
-            string hexCode = Convert.ToInt32(compiledInstruction, 2).ToString("X").PadLeft(8, '0');
+            var compiledInstruction = CompileInstruction(instruction);
+            var hexCode = Convert.ToInt32(compiledInstruction, 2).ToString("X").PadLeft(8, '0');
             machineCode.Add(hexCode);
         }
         return machineCode;
@@ -23,8 +19,8 @@ public class Compiler
 
     public static List<string> CompileToBin(List<string> assemblyCode)
     {
-        List<string> machineCode = new List<string>();
-        foreach (string instruction in assemblyCode)
+        var machineCode = new List<string>();
+        foreach (var instruction in assemblyCode)
         {
             machineCode.Add(CompileInstruction(instruction));
         }
@@ -33,21 +29,20 @@ public class Compiler
 
     public static string CompileInstruction(string instruction)
     {
-        string[] parts = instruction.Trim().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-        string opcode = parts[0];
-        string[] args = parts.Skip(1).ToArray();
+        var parsedInstruction = Parser.ParseInstruction(instruction);
+        var opcode = parsedInstruction.Opcode;
 
         if (Instructions.RTypeInstructions.ContainsKey(opcode))
         {
-            return CompileRTypeInstruction(instruction);
+            return CompileRTypeInstruction(parsedInstruction);
         }
         else if (Instructions.ITypeInstructions.ContainsKey(opcode))
         {
-            return CompileITypeInstruction(instruction);
+            return CompileITypeInstruction(parsedInstruction);
         }
         else if (Instructions.JTypeInstructions.ContainsKey(opcode))
         {
-            return CompileJTypeInstruction(instruction);
+            return CompileJTypeInstruction(parsedInstruction);
         }
         else
         {
@@ -55,99 +50,81 @@ public class Compiler
         }
     }
 
-    private static string CompileRTypeInstruction(string instruction)
+    private static string CompileRTypeInstruction(dynamic parsedInstruction)
     {
-        var (category, opcode, rd, rs, rt, shamt, immediate, target) = Parser.ParseInstruction(instruction);
-        string opcodeValue = Instructions.RTypeInstructions[opcode].Opcode;
-        string functValue = Instructions.RTypeInstructions[opcode].Funct;
+        var opcodeValue = Instructions.RTypeInstructions[parsedInstruction.Opcode].Opcode;
+        var functValue = Instructions.RTypeInstructions[parsedInstruction.Opcode].Funct;
 
-        switch (category)
+        switch (parsedInstruction.Category)
         {
             case "Register":
                 return opcodeValue +
-                    Registers.RegisterMap[rs] +
-                    Registers.RegisterMap[rt] +
-                    Registers.RegisterMap[rd] +
-                    "00000" +
-                    functValue;
+                       Registers.RegisterMap[parsedInstruction.Rs] +
+                       Registers.RegisterMap[parsedInstruction.Rt] +
+                       Registers.RegisterMap[parsedInstruction.Rd] +
+                       "00000" +
+                       functValue;
             case "Shift":
                 return opcodeValue +
-                    "00000" +
-                    Registers.RegisterMap[rt] +
-                    Registers.RegisterMap[rd] +
-                    ConvertImmediateToBinary(shamt, 5) +
-                    functValue;
+                       "00000" +
+                       Registers.RegisterMap[parsedInstruction.Rt] +
+                       Registers.RegisterMap[parsedInstruction.Rd] +
+                       ConvertImmediateToBinary(parsedInstruction.Shamt, 5) +
+                       functValue;
             case "MultDiv":
                 return opcodeValue +
-                    Registers.RegisterMap[rs] +
-                    Registers.RegisterMap[rt] +
-                    "00000" +
-                    "00000" +
-                    functValue;
+                       Registers.RegisterMap[parsedInstruction.Rs] +
+                       Registers.RegisterMap[parsedInstruction.Rt] +
+                       "00000" +
+                       "00000" +
+                       functValue;
             case "MoveFrom":
                 return opcodeValue +
-                    "00000" +
-                    "00000" +
-                    Registers.RegisterMap[rd] +
-                    "00000" +
-                    functValue;
+                       "00000" +
+                       "00000" +
+                       Registers.RegisterMap[parsedInstruction.Rd] +
+                       "00000" +
+                       functValue;
             case "RJump":
                 return opcodeValue +
-                    Registers.RegisterMap[rs] +
-                    "00000" +
-                    "00000" +
-                    "00000" +
-                    functValue;
+                       Registers.RegisterMap[parsedInstruction.Rs] +
+                       "00000" +
+                       "00000" +
+                       "00000" +
+                       functValue;
             default:
-                throw new Exception($"Invalid R-Type instruction: {instruction}");
+                throw new Exception($"Invalid R-Type instruction: {parsedInstruction}");
         }
     }
 
-    private static string CompileITypeInstruction(string instruction)
+    private static string CompileITypeInstruction(dynamic parsedInstruction)
     {
-        var (category, opcode, rd, rs, rt, shamt, immediate, target) = Parser.ParseInstruction(instruction);
-        string opcodeValue = Instructions.ITypeInstructions[opcode].Opcode;
+        var opcodeValue = Instructions.ITypeInstructions[parsedInstruction.Opcode].Opcode;
 
-        if (category == "LoadUpperImmediate")
+        if (parsedInstruction.Category == "LoadUpperImmediate")
         {
             return opcodeValue +
-                "00000" +
-                Registers.RegisterMap[rt] +
-                ConvertImmediateToBinary(immediate, 16);
+                   "00000" +
+                   Registers.RegisterMap[parsedInstruction.Rt] +
+                   ConvertImmediateToBinary(parsedInstruction.Immediate, 16);
         }
         else
         {
             return opcodeValue +
-                Registers.RegisterMap[rs] +
-                Registers.RegisterMap[rt] +
-                ConvertImmediateToBinary(immediate, 16);
+                   Registers.RegisterMap[parsedInstruction.Rs] +
+                   Registers.RegisterMap[parsedInstruction.Rt] +
+                   ConvertImmediateToBinary(parsedInstruction.Immediate, 16);
         }
     }
 
-    private static string CompileJTypeInstruction(string instruction)
+    private static string CompileJTypeInstruction(dynamic parsedInstruction)
     {
-        var (category, opcode, rd, rs, rt, shamt, immediate, target) = Parser.ParseInstruction(instruction);
-        string opcodeValue = Instructions.JTypeInstructions[opcode].Opcode;
-
-        // Check if the target is a label
-        if (Labels.TryGetValue(target, out int address))
-        {
-            return opcodeValue + ConvertImmediateToBinary(address.ToString(), 26);
-        }
-
-        // If it's not a label, treat it as an immediate
-        return opcodeValue + ConvertImmediateToBinary(target, 26);
+        var opcodeValue = Instructions.JTypeInstructions[parsedInstruction.Opcode].Opcode;
+        return opcodeValue + ConvertImmediateToBinary(parsedInstruction.Target, 26);
     }
 
-    private static string ConvertImmediateToBinary(string immediate, int length)
+    public static string ConvertImmediateToBinary(string immediate, int length)
     {
-        // If the immediate is a label, it should be converted to its address
-        if (Labels.TryGetValue(immediate, out int address))
-        {
-            immediate = address.ToString();
-        }
-
-        // Check for valid integer formats and handle them
         if (immediate.StartsWith('-'))
         {
             return Convert.ToString((int)Math.Pow(2, length) + int.Parse(immediate), 2).Substring(1).PadLeft(length, '0');

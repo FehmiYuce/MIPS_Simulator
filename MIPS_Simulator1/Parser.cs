@@ -1,123 +1,146 @@
-﻿using MIPS_Simulator1;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
-public static class Parser
+namespace MIPS_Simulator1
 {
-    public static (string category, string opcode, string rd, string rs, string rt, string shamt, string immediate, string target) ParseInstruction(string instruction)
+    public static class Parser
     {
-        string[] parts = instruction.Trim().Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-        if (parts.Length == 0)
+        public static dynamic ParseInstruction(string instruction)
         {
-            throw new Exception("Instruction cannot be empty");
-        }
+            string[] parts = instruction.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string opcode = parts[0];
 
-        string opcode = parts[0];
-        string rd = null, rs = null, rt = null, shamt = null, immediate = null, target = null;
+            var rTypeInstruction = ParseRtype(instruction);
+            var iTypeInstruction = ParseItype(instruction);
+            var jTypeInstruction = ParseJtype(instruction);
 
-        if (Instructions.RTypeInstructions.ContainsKey(opcode))
-        {
-            string funct = Instructions.RTypeInstructions[opcode].Funct;
-            if (new[] { "sll", "srl", "sra" }.Contains(opcode))
+            if (Instructions.RTypeInstructions.ContainsKey(opcode) && rTypeInstruction != null)
             {
-                if (parts.Length < 4)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rd = parts[1];
-                rt = parts[2];
-                shamt = parts[3];
-                return ("Shift", opcode, rd, null, rt, shamt, null, null);
+                return rTypeInstruction;
             }
-            else if (new[] { "jr" }.Contains(opcode))
+            else if (Instructions.ITypeInstructions.ContainsKey(opcode) && iTypeInstruction != null)
             {
-                if (parts.Length < 2)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rs = parts[1];
-                return ("RJump", opcode, null, rs, null, null, null, null);
+                return iTypeInstruction;
             }
-            else if (new[] { "mfhi", "mflo" }.Contains(opcode))
+            else if (Instructions.JTypeInstructions.ContainsKey(opcode) && jTypeInstruction != null)
             {
-                if (parts.Length < 2)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rd = parts[1];
-                return ("MoveFrom", opcode, rd, null, null, null, null, null);
-            }
-            else if (new[] { "mult", "div" }.Contains(opcode))
-            {
-                if (parts.Length < 3)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rs = parts[1];
-                rt = parts[2];
-                return ("MultDiv", opcode, null, rs, rt, null, null, null);
+                return jTypeInstruction;
             }
             else
             {
-                if (parts.Length < 4)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rd = parts[1];
-                rs = parts[2];
-                rt = parts[3];
-                return ("Register", opcode, rd, rs, rt, null, null, null);
+                throw new Exception($"Invalid instruction: {instruction}");
             }
         }
-        else if (Instructions.ITypeInstructions.ContainsKey(opcode))
+
+        private static dynamic ParseRtype(string instruction)
         {
-            if (opcode == "lui")
+            Regex rTypeRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
+            Regex shiftRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*(\d+|0x[\da-fA-F]+)$", RegexOptions.IgnoreCase);
+            Regex multDivRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
+            Regex mfRegex = new Regex(@"^mf(\w+)\s+\$(\w+)$", RegexOptions.IgnoreCase);
+            Regex jumpRegex = new Regex(@"^jr\s+\$(\w+)$", RegexOptions.IgnoreCase);
+
+            Match rTypeMatches = rTypeRegex.Match(instruction);
+            Match shiftMatches = shiftRegex.Match(instruction);
+            Match multDivMatches = multDivRegex.Match(instruction);
+            Match mfMatches = mfRegex.Match(instruction);
+            Match jumpMatches = jumpRegex.Match(instruction);
+
+            if (rTypeMatches.Success)
             {
-                if (parts.Length < 3)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rt = parts[1];
-                immediate = parts[2];
-                return ("LoadUpperImmediate", opcode, null, null, rt, null, immediate, null);
+                string opcode = rTypeMatches.Groups[1].Value;
+                string rd = rTypeMatches.Groups[2].Value;
+                string rs = rTypeMatches.Groups[3].Value;
+                string rt = rTypeMatches.Groups[4].Value;
+                return new { Category = "Register", Opcode = opcode, Rd = "$" + rd, Rs = "$" + rs, Rt = "$" + rt };
             }
-            else if (new[] { "lw", "lb", "sw", "sb" }.Contains(opcode))
+            else if (shiftMatches.Success)
             {
-                if (parts.Length < 3)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rt = parts[1];
-                var offsetAndBase = parts[2].Split(new char[] { '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
-                if (offsetAndBase.Length < 2)
-                {
-                    throw new Exception($"Invalid address format for {opcode}: {instruction}");
-                }
-                immediate = offsetAndBase[0];
-                rs = offsetAndBase[1];
-                return ("LoadStore", opcode, null, rs, rt, null, immediate, null);
+                string opcode = shiftMatches.Groups[1].Value;
+                string rd = shiftMatches.Groups[2].Value;
+                string rt = shiftMatches.Groups[3].Value;
+                string shamt = shiftMatches.Groups[4].Value;
+                return new { Category = "Shift", Opcode = opcode, Rd = "$" + rd, Rt = "$" + rt, Shamt = shamt };
+            }
+            else if (multDivMatches.Success)
+            {
+                string opcode = multDivMatches.Groups[1].Value;
+                string rs = multDivMatches.Groups[2].Value;
+                string rt = multDivMatches.Groups[3].Value;
+                return new { Category = "MultDiv", Opcode = opcode, Rs = "$" + rs, Rt = "$" + rt };
+            }
+            else if (mfMatches.Success)
+            {
+                string opcode = mfMatches.Groups[1].Value;
+                string rd = mfMatches.Groups[2].Value;
+                return new { Category = "MoveFrom", Opcode = "mf" + opcode, Rd = "$" + rd };
+            }
+            else if (jumpMatches.Success)
+            {
+                string rs = jumpMatches.Groups[1].Value;
+                return new { Category = "RJump", Opcode = "jr", Rs = "$" + rs };
             }
             else
             {
-                if (parts.Length < 4)
-                {
-                    throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-                }
-                rt = parts[1];
-                rs = parts[2];
-                immediate = parts[3];
-                return ("Immediate", opcode, null, rs, rt, null, immediate, null);
+                return null;
             }
-        }
-        else if (Instructions.JTypeInstructions.ContainsKey(opcode))
-        {
-            if (parts.Length < 2)
-            {
-                throw new Exception($"Invalid instruction format for {opcode}: {instruction}");
-            }
-            target = parts[1];
-            return ("Jump", opcode, null, null, null, null, null, target);
         }
 
-        throw new Exception($"Invalid instruction format: {instruction}");
+        private static dynamic ParseItype(string instruction)
+        {
+            Regex itypeRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
+            Regex loadStoreRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)\((\$\w+)\)$", RegexOptions.IgnoreCase);
+            Regex luiRegex = new Regex(@"^lui\s+\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
+
+            Match itypeMatches = itypeRegex.Match(instruction);
+            Match loadStoreMatches = loadStoreRegex.Match(instruction);
+            Match luiMatches = luiRegex.Match(instruction);
+
+            if (itypeMatches.Success)
+            {
+                string opcode = itypeMatches.Groups[1].Value;
+                string rt = itypeMatches.Groups[2].Value;
+                string rs = itypeMatches.Groups[3].Value;
+                string immediate = itypeMatches.Groups[4].Value;
+                return new { Category = "Immediate", Opcode = opcode, Rt = "$" + rt, Rs = "$" + rs, Immediate = immediate };
+            }
+            else if (loadStoreMatches.Success)
+            {
+                string opcode = loadStoreMatches.Groups[1].Value;
+                string rt = loadStoreMatches.Groups[2].Value;
+                string immediate = loadStoreMatches.Groups[3].Value;
+                string rs = loadStoreMatches.Groups[4].Value;
+                return new { Category = "LoadStore", Opcode = opcode, Rt = "$" + rt, Rs = rs, Immediate = immediate };
+            }
+            else if (luiMatches.Success)
+            {
+                string rt = luiMatches.Groups[1].Value;
+                string immediate = luiMatches.Groups[2].Value;
+                return new { Category = "LoadUpperImmediate", Opcode = "lui", Rt = "$" + rt, Immediate = immediate };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private static dynamic ParseJtype(string instruction)
+        {
+            Regex jTypeRegex = new Regex(@"^(\w+)\s+(\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
+
+            Match jTypeMatches = jTypeRegex.Match(instruction);
+
+            if (jTypeMatches.Success)
+            {
+                string opcode = jTypeMatches.Groups[1].Value;
+                string target = jTypeMatches.Groups[2].Value;
+                return new { Category = "Jump", Opcode = opcode, Target = target };
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

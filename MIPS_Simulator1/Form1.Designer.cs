@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             textBox1 = new TextBox();
             button1 = new Button();
             dataGridView1 = new DataGridView();
@@ -49,9 +50,15 @@
             Column11 = new DataGridViewTextBoxColumn();
             button2 = new Button();
             button3 = new Button();
+            pictureBox1 = new PictureBox();
+            pictureBox2 = new PictureBox();
+            pictureBox3 = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
             SuspendLayout();
             // 
             // textBox1
@@ -66,7 +73,7 @@
             // 
             // button1
             // 
-            button1.Location = new Point(27, 23);
+            button1.Location = new Point(67, 16);
             button1.Name = "button1";
             button1.Size = new Size(75, 23);
             button1.TabIndex = 1;
@@ -201,7 +208,7 @@
             // 
             // button2
             // 
-            button2.Location = new Point(126, 23);
+            button2.Location = new Point(211, 18);
             button2.Name = "button2";
             button2.Size = new Size(75, 23);
             button2.TabIndex = 8;
@@ -211,7 +218,7 @@
             // 
             // button3
             // 
-            button3.Location = new Point(541, 23);
+            button3.Location = new Point(541, 18);
             button3.Name = "button3";
             button3.Size = new Size(75, 23);
             button3.TabIndex = 9;
@@ -219,11 +226,44 @@
             button3.UseVisualStyleBackColor = true;
             button3.Click += button3_Click;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.Location = new Point(176, 16);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(29, 25);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox1.TabIndex = 10;
+            pictureBox1.TabStop = false;
+            // 
+            // pictureBox2
+            // 
+            pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
+            pictureBox2.Location = new Point(510, 12);
+            pictureBox2.Name = "pictureBox2";
+            pictureBox2.Size = new Size(25, 27);
+            pictureBox2.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox2.TabIndex = 11;
+            pictureBox2.TabStop = false;
+            // 
+            // pictureBox3
+            // 
+            pictureBox3.Image = (Image)resources.GetObject("pictureBox3.Image");
+            pictureBox3.Location = new Point(27, 16);
+            pictureBox3.Name = "pictureBox3";
+            pictureBox3.Size = new Size(34, 25);
+            pictureBox3.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox3.TabIndex = 12;
+            pictureBox3.TabStop = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(989, 628);
+            Controls.Add(pictureBox3);
+            Controls.Add(pictureBox2);
+            Controls.Add(pictureBox1);
             Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(dataGridView3);
@@ -236,11 +276,14 @@
             Controls.Add(textBox1);
             ImeMode = ImeMode.On;
             Name = "Form1";
-            Text = "Form1";
+            Text = "FAMEE SIMULATOR";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -268,5 +311,8 @@
 		private DataGridViewTextBoxColumn Column11;
         private Button button2;
         private Button button3;
+        private PictureBox pictureBox1;
+        private PictureBox pictureBox2;
+        private PictureBox pictureBox3;
     }
 }
