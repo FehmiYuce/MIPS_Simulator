@@ -112,12 +112,20 @@ namespace MIPS_Simulator1
             rs = Convert.ToInt32(instr.Substring(6, 5), 2);
             rt = Convert.ToInt32(instr.Substring(11, 5), 2);
             rd = Convert.ToInt32(instr.Substring(16, 5), 2);
-            shamt = Convert.ToInt32(instr.Substring(21, 5), 2);
+            shamt = Convert.ToInt32(instr.Substring(21, 5));
             funct = instr.Substring(26, 6);
+
             var parts = Parser.ParseInstruction(instr_asm);
-            imm = signedInt(Convert.ToInt32(parts.immediate));
+
+            // Access the immediate field correctly based on the expected property name
+            if (parts.Category == "Immediate" || parts.Category == "LoadStore" || parts.Category == "LoadUpperImmediate")
+            {
+                imm = signedInt(Convert.ToInt32(parts.Immediate));
+            }
+
             target = Convert.ToInt32(instr.Substring(6, 26), 2);
         }
+
 
         public void Reset()
         {

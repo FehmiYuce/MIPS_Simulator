@@ -24,18 +24,23 @@ namespace MIPS_Simulator1
 
         private void button1_Click(object sender, EventArgs e) // Load button
         {
-
-            string[] assemblyCodeArray = richTextBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] assemblyCodeArray = textBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
             List<string> assemblyCode = assemblyCodeArray.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
 
             // Etiketlerin (labels) iþlenmesi
-            assemblyCode = ProcessLabels(assemblyCode);
+            // assemblyCode = ProcessLabels(assemblyCode);
 
             List<string> hexMachineCode = Compiler.CompileToHex(assemblyCode);
             List<string> binMachineCode = Compiler.CompileToBin(assemblyCode);
 
             // Convert the binary machine code to an int array
-            int[] binMachineCodeInts = binMachineCode.Select(bin => Convert.ToInt32(bin, 2)).ToArray();
+            int[] binMachineCodeInts = binMachineCode.Select(bin =>
+            {
+                // Parse binary string to ulong first
+                ulong parsedValue = Convert.ToUInt64(bin, 2);
+                // Cast to uint and then to int with unchecked context
+                return unchecked((int)(uint)parsedValue);
+            }).ToArray();
 
             mips.SetIM(assemblyCode.ToArray(), binMachineCodeInts);
 
@@ -202,57 +207,57 @@ namespace MIPS_Simulator1
 
 
         // Etiketlerin (labels) iþlenmesi
-        private List<string> ProcessLabels(List<string> assemblyCode)
-        {
-            Dictionary<string, int> labels = new Dictionary<string, int>();
-            List<string> processedCode = new List<string>();
-            int currentAddress = 0;
+        //private List<string> ProcessLabels(List<string> assemblyCode)
+        //{
+        //    Dictionary<string, int> labels = new Dictionary<string, int>();
+        //    List<string> processedCode = new List<string>();
+        //    int currentAddress = 0;
 
-            // First pass: Collect labels and their addresses
-            foreach (string line in assemblyCode)
-            {
-                string trimmedLine = line.Trim();
-                if (!string.IsNullOrWhiteSpace(trimmedLine))
-                {
-                    string[] parts = trimmedLine.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    string firstPart = parts[0];
+        //    // First pass: Collect labels and their addresses
+        //    foreach (string line in assemblyCode)
+        //    {
+        //        string trimmedLine = line.Trim();
+        //        if (!string.IsNullOrWhiteSpace(trimmedLine))
+        //        {
+        //            string[] parts = trimmedLine.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        //            string firstPart = parts[0];
 
-                    if (firstPart.EndsWith(":"))
-                    {
-                        string label = firstPart.Substring(0, firstPart.Length - 1);
-                        if (!labels.ContainsKey(label))
-                        {
-                            labels[label] = currentAddress;
-                        }
-                    }
-                    else
-                    {
-                        processedCode.Add(trimmedLine);
-                        currentAddress += 4; // Assuming each instruction is 4 bytes
-                    }
-                }
-            }
+        //            if (firstPart.EndsWith(":"))
+        //            {
+        //                string label = firstPart.Substring(0, firstPart.Length - 1);
+        //                if (!labels.ContainsKey(label))
+        //                {
+        //                    labels[label] = currentAddress;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                processedCode.Add(trimmedLine);
+        //                currentAddress += 4; // Assuming each instruction is 4 bytes
+        //            }
+        //        }
+        //    }
 
-            // Second pass: Replace labels with their addresses
-            List<string> finalCode = new List<string>();
-            foreach (string line in processedCode)
-            {
-                string replacedLine = line;
-                foreach (var label in labels)
-                {
-                    if (line.Contains(label.Key))
-                    {
-                        replacedLine = replacedLine.Replace(label.Key, label.Value.ToString());
-                    }
-                }
-                finalCode.Add(replacedLine);
-            }
+        //    // Second pass: Replace labels with their addresses
+        //    List<string> finalCode = new List<string>();
+        //    foreach (string line in processedCode)
+        //    {
+        //        string replacedLine = line;
+        //        foreach (var label in labels)
+        //        {
+        //            if (line.Contains(label.Key))
+        //            {
+        //                replacedLine = replacedLine.Replace(label.Key, label.Value.ToString());
+        //            }
+        //        }
+        //        finalCode.Add(replacedLine);
+        //    }
 
-            // Update the Compiler's Labels dictionary
-            Compiler.SetLabels(labels);
+        //    // Update the Compiler's Labels dictionary
+        //    Compiler.SetLabels(labels);
 
-            return finalCode;
-        }
+        //    return finalCode;
+        //}
 
 
 
