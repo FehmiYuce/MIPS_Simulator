@@ -22,7 +22,11 @@ namespace MIPS_Simulator1
 
             InitializeDMTable();
             InitializeIMTable();
+
+            InitializeComponent();
+      
         }
+
 
         private void button1_Click(object sender, EventArgs e) // Load button
         {
@@ -570,6 +574,8 @@ namespace MIPS_Simulator1
 
             HighlightChangedCellsInColumn3();
         }
+
+
 
     }
 }
