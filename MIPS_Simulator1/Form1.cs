@@ -24,7 +24,7 @@ namespace MIPS_Simulator1
 
         private void button1_Click(object sender, EventArgs e) // Load button
         {
-            string[] assemblyCodeArray = textBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] assemblyCodeArray = richTextBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
             List<string> assemblyCode = assemblyCodeArray.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
 
             // Etiketlerin (labels) iþlenmesi
