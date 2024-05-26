@@ -557,5 +557,7 @@ namespace MIPS_Simulator1
             }
             return result.ToString().PadLeft(length, '0');
         }
+
+
     }
 }

@@ -25,9 +25,7 @@ namespace MIPS_Simulator1
         private void button1_Click(object sender, EventArgs e) // Load button
         {
 
-
-
-            string[] assemblyCodeArray = textBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] assemblyCodeArray = richTextBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
             List<string> assemblyCode = assemblyCodeArray.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
 
             // Etiketlerin (labels) iþlenmesi
@@ -46,31 +44,122 @@ namespace MIPS_Simulator1
             UpdateRegistersTable();
         }
 
+
+
+        private int currentLineIndex = 0; // Baþlangýçta 0. satýrdan baþlayalým
+
         private void button2_Click(object sender, EventArgs e) // Step button
         {
-
             mips.Step();
-            currentInstructionIndex++; // Bir sonraki iþlem sýrasýný belirle
             UpdateRegistersTable();
             UpdateDataMemoryTable(mips.DMToHex());
-            //HighlightRow(currentRowIndex);
-            UpdateInstructionPointer(currentInstructionIndex); // Satýrý iþaretle
+
+            // Önceki satýrýn vurgusunu temizle
+            ClearRowHighlight(currentLineIndex - 1);
+
+            // Yeni satýrýn vurgusunu yap
+            HighlightCurrentLine();
+
+            // Satýrý iþaretle
+            UpdateInstructionPointer(currentLineIndex);
+
+            // Sonuca göre register tablosunu kontrol et ve sonuca uygun satýrý vurgula
+            HighlightRowByResult();
+        }
+
+        private void HighlightRowByResult()
+        {
+            // Her bir satýr için sonucu kontrol et
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                string result = GetResultFromRow(row);
+                if (result == null)
+                {
+                    // Satýrýn sonucu yoksa varsayýlan arka plan rengini kullan
+                    row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+                }
+                else
+                {
+                    // Satýrýn sonucuna göre arka plan rengini belirle
+                    if (result == "DesiredResult") // Burada "DesiredResult" sonucunu kontrol ediyoruz
+                    {
+                        row.DefaultCellStyle.BackColor = Color.BlueViolet; // Örnek olarak mavi-mor renk kullandým
+                    }
+                    else
+                    {
+                        row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+                    }
+                }
+            }
+        }
+
+        // DataGridView'deki bir satýrdan sonucu almak için bu metodu kullanabiliriz
+        private string GetResultFromRow(DataGridViewRow row)
+        {
+            // Örneðin, 3. hücredeki deðeri sonuç olarak alalým
+            if (row.Cells.Count > 2 && row.Cells[2].Value != null)
+            {
+                return row.Cells[2].Value.ToString();
+            }
+            return null; // Eðer sonuç yoksa null döndür
         }
 
 
-        //Satýrý belirtmek için bu metod kullanýlabilir
-        private void HighlightRow(int rowIndex)
+        private string GetCurrentLineText()
         {
-            if (currentRowIndex != -1)
+            if (currentLineIndex >= 0 && currentLineIndex < richTextBox1.Lines.Length)
             {
-                // Önceki iþaretçiyi kaldýr
-                dataGridView1.Rows[currentRowIndex].DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+                return richTextBox1.Lines[currentLineIndex];
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        private string ProcessLineAndGetResult(string line)
+        {
+            // Burada satýrýn iþlenmesi ve sonucun elde edilmesi iþlemlerini yapýn
+            // Örneðin:
+            // string result = ProcessLine(line);
+            // return result;
+
+            // Burada örnek bir sonuç döndürüyorum, siz gerçek iþlemlerinizi burada yapmalýsýnýz
+            return "ResultValue";
+        }
+
+
+        private void HighlightCurrentLine()
+        {
+            // Aktif satýrý vurgula
+            if (currentLineIndex < richTextBox1.Lines.Length)
+            {
+                richTextBox1.Select(richTextBox1.GetFirstCharIndexFromLine(currentLineIndex), richTextBox1.Lines[currentLineIndex].Length);
+                richTextBox1.SelectionBackColor = Color.Aqua;
+            }
+            else
+            {
+                // Eðer tüm satýrlar vurgulanmýþsa, baþa dön
+                currentLineIndex = 0;
             }
 
-            // Yeni iþaretçiyi ayarla
-            dataGridView1.Rows[rowIndex].DefaultCellStyle.BackColor = Color.Yellow;
-            currentRowIndex = rowIndex; // Yeni iþaretçiyi güncelle
+            // Bir sonraki satýra geç
+            currentLineIndex++;
         }
+
+        private void ClearRowHighlight(int rowIndex)
+        {
+            if (rowIndex >= 0 && rowIndex < richTextBox1.Lines.Length)
+            {
+                richTextBox1.Select(richTextBox1.GetFirstCharIndexFromLine(rowIndex), richTextBox1.Lines[rowIndex].Length);
+                richTextBox1.SelectionBackColor = richTextBox1.BackColor;
+            }
+        }
+
+
+
+
+
 
         // Ýþlem sýrasýný güncelleme
         private void UpdateInstructionPointer(int currentInstructionIndex) //Instruction Memoryi iþaretler.
@@ -84,10 +173,31 @@ namespace MIPS_Simulator1
             // Yeni iþaretçiyi ayarla
             if (currentInstructionIndex >= 0 && currentInstructionIndex < dataGridView2.Rows.Count)
             {
-                dataGridView2.Rows[currentInstructionIndex].DefaultCellStyle.BackColor = Color.Yellow;
+                dataGridView2.Rows[currentInstructionIndex].DefaultCellStyle.BackColor = Color.White;
                 currentRowIndex = currentInstructionIndex; // Yeni iþaretçiyi güncelle
             }
         }
+
+        private void UpdateRegisterPointer(string registerName)
+        {
+            // Önceki iþaretçiyi kaldýr
+            if (currentRowIndex != -1 && currentRowIndex < dataGridView1.Rows.Count)
+            {
+                dataGridView1.Rows[currentRowIndex].DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+            }
+
+            // Yeni iþaretçiyi ayarla
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                if (row.Cells[0].Value != null && row.Cells[0].Value.ToString() == registerName)
+                {
+                    row.DefaultCellStyle.BackColor = Color.White;
+                    currentRowIndex = row.Index; // Yeni iþaretçiyi güncelle
+                    break;
+                }
+            }
+        }
+
 
 
 
@@ -144,10 +254,7 @@ namespace MIPS_Simulator1
             return finalCode;
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
 
-        }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -169,7 +276,7 @@ namespace MIPS_Simulator1
             UpdateRegistersTable();
         }
 
-        private void UpdateRegistersTable()
+        public void UpdateRegistersTable()
         {
             string[] registerValues = mips.RegToHex();
             string pcValue = mips.PCToHex().ToString();
@@ -297,7 +404,7 @@ namespace MIPS_Simulator1
         private void button3_Click(object sender, EventArgs e)
         {
             // TextBox'ý temizle
-            textBox1.Text = "";
+            richTextBox1.Text = "";
 
             // DataGridView'larý temizle
             dataGridView1.Rows.Clear();
@@ -325,5 +432,39 @@ namespace MIPS_Simulator1
         {
 
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            // Öncelikle iþlemi yap
+            mips.RunUntilEnd();
+
+            // Sonucu DataGridView'e yazdýr
+            string[] sonuc = mips.RegToHex();
+            string pcValue = mips.PCToHex().ToString();
+            string hiValue = mips.HiToHex().ToString();
+            string loValue = mips.LoToHex().ToString();
+            sonuc = sonuc.Concat(new string[] { pcValue, hiValue, loValue }).ToArray();
+            dataGridView1.Rows.Clear();
+
+            List<(string Name, int Number)> registerInfo = new List<(string, int)>
+        {
+            ("$zero", 0), ("$at", 1), ("$v0", 2), ("$v1", 3), ("$a0", 4), ("$a1", 5), ("$a2", 6), ("$a3", 7),
+            ("$t0", 8), ("$t1", 9), ("$t2", 10), ("$t3", 11), ("$t4", 12), ("$t5", 13), ("$t6", 14), ("$t7", 15),
+            ("$s0", 16), ("$s1", 17), ("$s2", 18), ("$s3", 19), ("$s4", 20), ("$s5", 21), ("$s6", 22), ("$s7", 23),
+            ("$t8", 24), ("$t9", 25), ("$k0", 26), ("$k1", 27), ("$gp", 28), ("$sp", 29), ("$fp", 30), ("$ra", 31),
+            ("pc", -1), ("hi", -1), ("lo", -1)
+        };
+
+            for (int i = 0; i < sonuc.Length; i++)
+            {
+                string name = registerInfo[i].Name;
+                int number = registerInfo[i].Number;
+                dataGridView1.Rows.Add(name, number, sonuc[i]); // Boþ name ve number, sonuç sütununa yazýlýr
+            }
+        }
+
+
+
+
     }
 }

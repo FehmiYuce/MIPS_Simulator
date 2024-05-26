@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            textBox1 = new TextBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             button1 = new Button();
             dataGridView1 = new DataGridView();
             Column1 = new DataGridViewTextBoxColumn();
@@ -40,7 +40,6 @@
             Column5 = new DataGridViewTextBoxColumn();
             Column6 = new DataGridViewTextBoxColumn();
             label2 = new Label();
-            label3 = new Label();
             dataGridView3 = new DataGridView();
             Column7 = new DataGridViewTextBoxColumn();
             Column8 = new DataGridViewTextBoxColumn();
@@ -49,29 +48,34 @@
             Column11 = new DataGridViewTextBoxColumn();
             button2 = new Button();
             button3 = new Button();
+            richTextBox1 = new RichTextBox();
+            label4 = new Label();
+            pictureBox1 = new PictureBox();
+            pictureBox2 = new PictureBox();
+            pictureBox3 = new PictureBox();
+            pictureBox4 = new PictureBox();
+            button4 = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
             SuspendLayout();
-            // 
-            // textBox1
-            // 
-            textBox1.Location = new Point(27, 49);
-            textBox1.Multiline = true;
-            textBox1.Name = "textBox1";
-            textBox1.ScrollBars = ScrollBars.Vertical;
-            textBox1.Size = new Size(589, 257);
-            textBox1.TabIndex = 0;
-            textBox1.TextChanged += textBox1_TextChanged;
             // 
             // button1
             // 
-            button1.Location = new Point(27, 23);
+            button1.BackColor = SystemColors.ButtonHighlight;
+            button1.BackgroundImageLayout = ImageLayout.Stretch;
+            button1.FlatStyle = FlatStyle.Popup;
+            button1.ImageAlign = ContentAlignment.TopLeft;
+            button1.Location = new Point(646, 10);
             button1.Name = "button1";
-            button1.Size = new Size(75, 23);
+            button1.Size = new Size(199, 28);
             button1.TabIndex = 1;
-            button1.Text = "Run";
-            button1.UseVisualStyleBackColor = true;
+            button1.Text = "Assemble";
+            button1.UseVisualStyleBackColor = false;
             button1.Click += button1_Click;
             // 
             // dataGridView1
@@ -80,9 +84,9 @@
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3 });
             dataGridView1.GridColor = Color.Black;
-            dataGridView1.Location = new Point(637, 49);
+            dataGridView1.Location = new Point(893, 24);
             dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(343, 257);
+            dataGridView1.Size = new Size(354, 592);
             dataGridView1.TabIndex = 2;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -104,9 +108,10 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(637, 31);
+            label1.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.Location = new Point(893, 0);
             label1.Name = "label1";
-            label1.Size = new Size(54, 15);
+            label1.Size = new Size(70, 20);
             label1.TabIndex = 3;
             label1.Text = "Registers";
             label1.Click += label1_Click;
@@ -115,9 +120,9 @@
             // 
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView2.Columns.AddRange(new DataGridViewColumn[] { Column4, Column5, Column6 });
-            dataGridView2.Location = new Point(27, 327);
+            dataGridView2.Location = new Point(27, 322);
             dataGridView2.Name = "dataGridView2";
-            dataGridView2.Size = new Size(953, 135);
+            dataGridView2.Size = new Size(845, 135);
             dataGridView2.TabIndex = 4;
             dataGridView2.CellContentClick += dataGridView2_CellContentClick;
             // 
@@ -142,22 +147,13 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(27, 309);
+            label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.Location = new Point(27, 299);
             label2.Name = "label2";
-            label2.Size = new Size(108, 15);
+            label2.Size = new Size(140, 20);
             label2.TabIndex = 5;
             label2.Text = "Instrucion Memory";
             label2.Click += label2_Click;
-            // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Location = new Point(27, 465);
-            label3.Name = "label3";
-            label3.Size = new Size(79, 15);
-            label3.TabIndex = 6;
-            label3.Text = "Data Memory";
-            label3.Click += label3_Click;
             // 
             // dataGridView3
             // 
@@ -165,7 +161,7 @@
             dataGridView3.Columns.AddRange(new DataGridViewColumn[] { Column7, Column8, Column9, Column10, Column11 });
             dataGridView3.Location = new Point(27, 483);
             dataGridView3.Name = "dataGridView3";
-            dataGridView3.Size = new Size(953, 133);
+            dataGridView3.Size = new Size(845, 133);
             dataGridView3.TabIndex = 7;
             dataGridView3.CellContentClick += dataGridView3_CellContentClick;
             // 
@@ -201,54 +197,139 @@
             // 
             // button2
             // 
-            button2.Location = new Point(126, 23);
+            button2.BackColor = SystemColors.ButtonHighlight;
+            button2.FlatStyle = FlatStyle.Popup;
+            button2.Location = new Point(646, 44);
             button2.Name = "button2";
-            button2.Size = new Size(75, 23);
+            button2.Size = new Size(199, 28);
             button2.TabIndex = 8;
             button2.Text = "Next";
-            button2.UseVisualStyleBackColor = true;
+            button2.UseVisualStyleBackColor = false;
             button2.Click += button2_Click;
             // 
             // button3
             // 
-            button3.Location = new Point(541, 23);
+            button3.BackColor = SystemColors.ButtonHighlight;
+            button3.FlatStyle = FlatStyle.Popup;
+            button3.Location = new Point(646, 258);
             button3.Name = "button3";
-            button3.Size = new Size(75, 23);
+            button3.Size = new Size(199, 27);
             button3.TabIndex = 9;
             button3.Text = "Clear";
-            button3.UseVisualStyleBackColor = true;
+            button3.UseVisualStyleBackColor = false;
             button3.Click += button3_Click;
+            // 
+            // richTextBox1
+            // 
+            richTextBox1.Location = new Point(27, 24);
+            richTextBox1.Name = "richTextBox1";
+            richTextBox1.Size = new Size(579, 261);
+            richTextBox1.TabIndex = 10;
+            richTextBox1.Text = "";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label4.Location = new Point(27, 460);
+            label4.Name = "label4";
+            label4.Size = new Size(104, 20);
+            label4.TabIndex = 11;
+            label4.Text = "Data Memory";
+            // 
+            // pictureBox1
+            // 
+            pictureBox1.BackgroundImage = (Image)resources.GetObject("pictureBox1.BackgroundImage");
+            pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox1.Location = new Point(612, 78);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(28, 28);
+            pictureBox1.TabIndex = 12;
+            pictureBox1.TabStop = false;
+            // 
+            // pictureBox2
+            // 
+            pictureBox2.BackgroundImage = (Image)resources.GetObject("pictureBox2.BackgroundImage");
+            pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox2.Location = new Point(612, 45);
+            pictureBox2.Name = "pictureBox2";
+            pictureBox2.Size = new Size(28, 29);
+            pictureBox2.TabIndex = 13;
+            pictureBox2.TabStop = false;
+            // 
+            // pictureBox3
+            // 
+            pictureBox3.BackgroundImage = (Image)resources.GetObject("pictureBox3.BackgroundImage");
+            pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox3.Location = new Point(612, 257);
+            pictureBox3.Name = "pictureBox3";
+            pictureBox3.Size = new Size(28, 28);
+            pictureBox3.TabIndex = 14;
+            pictureBox3.TabStop = false;
+            // 
+            // pictureBox4
+            // 
+            pictureBox4.BackgroundImage = (Image)resources.GetObject("pictureBox4.BackgroundImage");
+            pictureBox4.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox4.Location = new Point(646, 114);
+            pictureBox4.Name = "pictureBox4";
+            pictureBox4.Size = new Size(199, 138);
+            pictureBox4.TabIndex = 15;
+            pictureBox4.TabStop = false;
+            // 
+            // button4
+            // 
+            button4.BackColor = Color.White;
+            button4.FlatStyle = FlatStyle.Popup;
+            button4.Location = new Point(646, 78);
+            button4.Name = "button4";
+            button4.Size = new Size(199, 30);
+            button4.TabIndex = 16;
+            button4.Text = "Run All";
+            button4.UseVisualStyleBackColor = false;
+            button4.Click += button4_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(989, 628);
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            BackColor = Color.MintCream;
+            ClientSize = new Size(1259, 628);
+            Controls.Add(button4);
+            Controls.Add(pictureBox4);
+            Controls.Add(pictureBox3);
+            Controls.Add(pictureBox2);
+            Controls.Add(pictureBox1);
+            Controls.Add(label4);
+            Controls.Add(richTextBox1);
             Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(dataGridView3);
-            Controls.Add(label3);
             Controls.Add(label2);
             Controls.Add(dataGridView2);
             Controls.Add(label1);
             Controls.Add(dataGridView1);
             Controls.Add(button1);
-            Controls.Add(textBox1);
+            FormBorderStyle = FormBorderStyle.FixedToolWindow;
             ImeMode = ImeMode.On;
             Name = "Form1";
-            Text = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "FAMEE SIMULATOR";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private TextBox textBox1;
-		private Button button1;
+        private Button button1;
 		private DataGridView dataGridView1;
 		private DataGridViewTextBoxColumn Column1;
 		private DataGridViewTextBoxColumn Column2;
@@ -259,7 +340,6 @@
 		private DataGridViewTextBoxColumn Column5;
 		private DataGridViewTextBoxColumn Column6;
 		private Label label2;
-		private Label label3;
 		private DataGridView dataGridView3;
 		private DataGridViewTextBoxColumn Column7;
 		private DataGridViewTextBoxColumn Column8;
@@ -268,5 +348,12 @@
 		private DataGridViewTextBoxColumn Column11;
         private Button button2;
         private Button button3;
+        private RichTextBox richTextBox1;
+        private Label label4;
+        private PictureBox pictureBox1;
+        private PictureBox pictureBox2;
+        private PictureBox pictureBox3;
+        private PictureBox pictureBox4;
+        private Button button4;
     }
 }
