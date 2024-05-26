@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using System.Drawing; // Bu satýrý ekleyin
+
 
 namespace MIPS_Simulator1
 {
     public partial class Form1 : Form
     {
         private MIPS mips;
-        private Dictionary<string, string> registers;
+        private Dictionary<string, int> registers;
         private int currentRowIndex = -1; // Baþlangýçta iþaretçi yok
         int currentInstructionIndex = 0; // Ýþlem sýrasýnýn baþlangýçta 0 olduðunu varsayalým
 
@@ -49,15 +51,42 @@ namespace MIPS_Simulator1
             UpdateRegistersTable();
         }
 
+        // Deðiþen register hücrelerini takip etmek için bir liste ekleyin
+        private List<DataGridViewCell> changedCells = new List<DataGridViewCell>();
+
+        private void HighlightChangedCellsInColumn3()
+        {
+            foreach (DataGridViewRow row in dataGridView1.Rows)
+            {
+                string cellValue = row.Cells[2].Value?.ToString(); // 3. sütundaki deðeri alýn
+
+                // Önceki deðeri depolamak için her satýr için bir etiket oluþturun (Tag)
+                if (cellValue != null)
+                    row.Cells[2].Tag = cellValue;
+
+                // Deðiþen hücreleri vurgulayýn
+                if (row.Cells[2].Tag != null && cellValue != row.Cells[2].Tag.ToString())
+                {
+                    row.Cells[2].Style.BackColor = Color.Green; // Deðiþen hücreleri vurgula
+                }
+                else
+                {
+                    row.Cells[2].Style.BackColor = dataGridView1.DefaultCellStyle.BackColor; // Deðiþmeyen hücreleri varsayýlan renge geri dön
+                }
+            }
+        }
 
 
         private int currentLineIndex = 0; // Baþlangýçta 0. satýrdan baþlayalým
 
+        private string[] oldRegisterValues;
         private void button2_Click(object sender, EventArgs e) // Step button
         {
             mips.Step();
             UpdateRegistersTable();
             UpdateDataMemoryTable(mips.DMToHex());
+
+            oldRegisterValues = mips.RegToHex().ToArray();
 
             // Önceki satýrýn vurgusunu temizle
             ClearRowHighlight(currentLineIndex - 1);
@@ -68,9 +97,63 @@ namespace MIPS_Simulator1
             // Satýrý iþaretle
             UpdateInstructionPointer(currentLineIndex);
 
-            // Sonuca göre register tablosunu kontrol et ve sonuca uygun satýrý vurgula
-            HighlightRowByResult();
+            // Deðiþen register hücrelerini vurgula
+            HighlightChangedRegisterCells(oldRegisterValues);
+
+            HighlightChangedCellsInColumn3();
         }
+
+        
+
+        // Deðiþen register hücrelerini vurgulayan metot
+        private void HighlightChangedRegisterCells(string[] oldValues)
+        {
+            var newRegisterValues = mips.RegToHex().ToArray();
+
+            for (int i = 0; i < newRegisterValues.Length; i++)
+            {
+                if (oldValues[i] != newRegisterValues[i])
+                {
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
+                    {
+                        if (row.Cells[0].Value.ToString() == Registers.RegisterList[i])
+                        {
+                            row.Cells[2].Style.BackColor = Color.LightPink; // Vurgulamak için sarý rengi kullan
+                            changedCells.Add(row.Cells[2]); // Deðiþen hücreyi listeye ekle
+                        }
+                    }
+                }
+            }
+        }
+
+        public static class Registers
+        {
+            public static Dictionary<string, int> RegisterMap { get; } = new Dictionary<string, int>
+            {
+                { "$zero", 0 }, { "$at", 1 }, { "$v0", 2 }, { "$v1", 3 },
+                { "$a0", 4 }, { "$a1", 5 }, { "$a2", 6 }, { "$a3", 7 },
+                { "$t0", 8 }, { "$t1", 9 }, { "$t2", 10 }, { "$t3", 11 },
+                { "$t4", 12 }, { "$t5", 13 }, { "$t6", 14 }, { "$t7", 15 },
+                { "$s0", 16 }, { "$s1", 17 }, { "$s2", 18 }, { "$s3", 19 },
+                { "$s4", 20 }, { "$s5", 21 }, { "$s6", 22 }, { "$s7", 23 },
+                { "$t8", 24 }, { "$t9", 25 }, { "$k0", 26 }, { "$k1", 27 },
+                { "$gp", 28 }, { "$sp", 29 }, { "$fp", 30 }, { "$ra", 31 },
+                { "pc", -1 }, { "hi", -1 }, { "lo", -1 }
+            };
+
+
+
+            public static List<string> RegisterList { get; } = new List<string>
+    {
+        "$zero", "$at", "$v0", "$v1", "$a0", "$a1", "$a2", "$a3",
+        "$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7",
+        "$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7",
+        "$t8", "$t9", "$k0", "$k1", "$gp", "$sp", "$fp", "$ra",
+        "pc", "hi", "lo"
+    };
+        }
+
+
 
         private void HighlightRowByResult()
         {
@@ -259,6 +342,8 @@ namespace MIPS_Simulator1
         //    return finalCode;
         //}
 
+      
+
 
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -431,6 +516,22 @@ namespace MIPS_Simulator1
 
             // Veri belleði tablosunu yeniden baþlat
             InitializeDMTable();
+
+           
+
+            ClearChangedCellHighlights();
+
+
+        }
+
+        // Deðiþen hücrelerin vurgusunu temizleyen metot
+        private void ClearChangedCellHighlights()
+        {
+            foreach (var cell in changedCells)
+            {
+                cell.Style.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+            }
+            changedCells.Clear();
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -442,7 +543,7 @@ namespace MIPS_Simulator1
         {
             // Öncelikle iþlemi yap
             mips.RunUntilEnd();
-
+            UpdateRegistersTable();
             // Sonucu DataGridView'e yazdýr
             string[] sonuc = mips.RegToHex();
             string pcValue = mips.PCToHex().ToString();
@@ -466,10 +567,9 @@ namespace MIPS_Simulator1
                 int number = registerInfo[i].Number;
                 dataGridView1.Rows.Add(name, number, sonuc[i]); // Boþ name ve number, sonuç sütununa yazýlýr
             }
+
+            HighlightChangedCellsInColumn3();
         }
-
-
-
 
     }
 }

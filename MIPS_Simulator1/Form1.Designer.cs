@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             button1 = new Button();
             dataGridView1 = new DataGridView();
@@ -55,6 +56,7 @@
             pictureBox3 = new PictureBox();
             pictureBox4 = new PictureBox();
             button4 = new Button();
+            pictureBox5 = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView3).BeginInit();
@@ -62,6 +64,7 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox5).BeginInit();
             SuspendLayout();
             // 
             // button1
@@ -83,9 +86,18 @@
             dataGridView1.BackgroundColor = Color.White;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3 });
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Window;
+            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.MenuHighlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridView1.GridColor = Color.Black;
             dataGridView1.Location = new Point(893, 24);
             dataGridView1.Name = "dataGridView1";
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.CellSelect;
             dataGridView1.Size = new Size(354, 592);
             dataGridView1.TabIndex = 2;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
@@ -104,6 +116,7 @@
             // 
             Column3.HeaderText = "Value";
             Column3.Name = "Column3";
+            Column3.ReadOnly = true;
             // 
             // label1
             // 
@@ -289,13 +302,24 @@
             button4.UseVisualStyleBackColor = false;
             button4.Click += button4_Click;
             // 
+            // pictureBox5
+            // 
+            pictureBox5.BackgroundImage = (Image)resources.GetObject("pictureBox5.BackgroundImage");
+            pictureBox5.BackgroundImageLayout = ImageLayout.Stretch;
+            pictureBox5.Location = new Point(612, 12);
+            pictureBox5.Name = "pictureBox5";
+            pictureBox5.Size = new Size(28, 27);
+            pictureBox5.TabIndex = 17;
+            pictureBox5.TabStop = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.MintCream;
-            ClientSize = new Size(1259, 628);
+            ClientSize = new Size(1904, 955);
+            Controls.Add(pictureBox5);
             Controls.Add(button4);
             Controls.Add(pictureBox4);
             Controls.Add(pictureBox3);
@@ -324,6 +348,7 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox5).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -331,9 +356,6 @@
         #endregion
         private Button button1;
 		private DataGridView dataGridView1;
-		private DataGridViewTextBoxColumn Column1;
-		private DataGridViewTextBoxColumn Column2;
-		private DataGridViewTextBoxColumn Column3;
 		private Label label1;
 		private DataGridView dataGridView2;
 		private DataGridViewTextBoxColumn Column4;
@@ -355,5 +377,9 @@
         private PictureBox pictureBox3;
         private PictureBox pictureBox4;
         private Button button4;
+        private PictureBox pictureBox5;
+        private DataGridViewTextBoxColumn Column1;
+        private DataGridViewTextBoxColumn Column2;
+        private DataGridViewTextBoxColumn Column3;
     }
 }
