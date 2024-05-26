@@ -40,6 +40,7 @@ namespace MIPS_Simulator1
             Regex multDivRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
             Regex mfRegex = new Regex(@"^mf(\w+)\s+\$(\w+)$", RegexOptions.IgnoreCase);
             Regex jumpRegex = new Regex(@"^jr\s+\$(\w+)$", RegexOptions.IgnoreCase);
+            
 
             Match rTypeMatches = rTypeRegex.Match(instruction);
             Match shiftMatches = shiftRegex.Match(instruction);
@@ -89,7 +90,7 @@ namespace MIPS_Simulator1
 
         private static dynamic ParseItype(string instruction)
         {
-            Regex itypeRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
+            Regex itypeRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+|[\w]+)$", RegexOptions.IgnoreCase);
             Regex loadStoreRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)\((\$\w+)\)$", RegexOptions.IgnoreCase);
             Regex luiRegex = new Regex(@"^lui\s+\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
 
@@ -102,8 +103,18 @@ namespace MIPS_Simulator1
                 string opcode = itypeMatches.Groups[1].Value;
                 string rt = itypeMatches.Groups[2].Value;
                 string rs = itypeMatches.Groups[3].Value;
-                string immediate = itypeMatches.Groups[4].Value;
-                return new { Category = "Immediate", Opcode = opcode, Rt = "$" + rt, Rs = "$" + rs, Immediate = immediate };
+                string immediateOrLabel = itypeMatches.Groups[4].Value;
+                int immediate;
+                bool isImmediate = int.TryParse(immediateOrLabel, out immediate);
+
+                if (isImmediate)
+                {
+                    return new { Category = "Immediate", Opcode = opcode, Rt = "$" + rt, Rs = "$" + rs, Immediate = immediateOrLabel };
+                }
+                else
+                {
+                    return new { Category = "Branch", Opcode = opcode, Rt = "$" + rt, Rs = "$" + rs, TargetLabel = immediateOrLabel };
+                }
             }
             else if (loadStoreMatches.Success)
             {
@@ -125,16 +136,27 @@ namespace MIPS_Simulator1
             }
         }
 
+
         private static dynamic ParseJtype(string instruction)
         {
-            Regex jTypeRegex = new Regex(@"^(\w+)\s+(\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
+            // Regex for J-type instruction with label
+            Regex jTypeLabelRegex = new Regex(@"^(\w+)\s+(\w+)$", RegexOptions.IgnoreCase);
+            // Regex for J-type instruction with numeric target
+            Regex jTypeNumericRegex = new Regex(@"^(\w+)\s+(\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
 
-            Match jTypeMatches = jTypeRegex.Match(instruction);
+            Match jTypeLabelMatches = jTypeLabelRegex.Match(instruction);
+            Match jTypeNumericMatches = jTypeNumericRegex.Match(instruction);
 
-            if (jTypeMatches.Success)
+            if (jTypeLabelMatches.Success)
             {
-                string opcode = jTypeMatches.Groups[1].Value;
-                string target = jTypeMatches.Groups[2].Value;
+                string opcode = jTypeLabelMatches.Groups[1].Value;
+                string targetLabel = jTypeLabelMatches.Groups[2].Value;
+                return new { Category = "Jump", Opcode = opcode, TargetLabel = targetLabel };
+            }
+            else if (jTypeNumericMatches.Success)
+            {
+                string opcode = jTypeNumericMatches.Groups[1].Value;
+                string target = jTypeNumericMatches.Groups[2].Value;
                 return new { Category = "Jump", Opcode = opcode, Target = target };
             }
             else
@@ -142,5 +164,6 @@ namespace MIPS_Simulator1
                 return null;
             }
         }
+
     }
 }

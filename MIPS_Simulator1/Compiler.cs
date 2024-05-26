@@ -8,47 +8,117 @@ public static class Compiler
     public static List<string> CompileToHex(List<string> assemblyCode)
     {
         var machineCode = new List<string>();
+        var labels = new Dictionary<string, int>();
+        int addressCounter = 0;
+
+        // First pass: record label addresses
         foreach (var instruction in assemblyCode)
         {
-            var compiledInstruction = CompileInstruction(instruction);
-            var hexCode = Convert.ToInt32(compiledInstruction, 2).ToString("X").PadLeft(8, '0');
-            machineCode.Add(hexCode);
+            if (instruction.EndsWith(":"))
+            {
+                string label = instruction.TrimEnd(':');
+                labels[label] = addressCounter;
+            }
+            else
+            {
+                addressCounter++;
+            }
         }
+
+        // Second pass: compile instructions, resolving labels
+        addressCounter = 0;
+        foreach (var instruction in assemblyCode)
+        {
+            if (!instruction.EndsWith(":"))
+            {
+                var compiledInstruction = CompileInstruction(instruction, labels, addressCounter);
+                var hexCode = Convert.ToUInt32(compiledInstruction, 2).ToString("X").PadLeft(8, '0');
+                machineCode.Add(hexCode);
+                addressCounter++;
+            }
+        }
+
         return machineCode;
     }
+
 
     public static List<string> CompileToBin(List<string> assemblyCode)
     {
         var machineCode = new List<string>();
+        var labels = new Dictionary<string, int>();
+        int addressCounter = 0;
+
+        // First pass: record label addresses
         foreach (var instruction in assemblyCode)
         {
-            machineCode.Add(CompileInstruction(instruction));
+            if (instruction.EndsWith(":"))
+            {
+                string label = instruction.TrimEnd(':');
+                labels[label] = addressCounter;
+            }
+            else
+            {
+                addressCounter++;
+            }
         }
+
+        // Second pass: compile instructions, resolving labels
+        addressCounter = 0;
+        foreach (var instruction in assemblyCode)
+        {
+            if (!instruction.EndsWith(":"))
+            {
+                machineCode.Add(CompileInstruction(instruction, labels, addressCounter));
+                addressCounter++;
+            }
+        }
+
         return machineCode;
     }
 
-    public static string CompileInstruction(string instruction)
+    public static string CompileInstruction(string instruction, Dictionary<string, int> labels, int currentAddress)
     {
         var parsedInstruction = Parser.ParseInstruction(instruction);
-        var opcode = parsedInstruction.Opcode;
 
-        if (Instructions.RTypeInstructions.ContainsKey(opcode))
+        switch (parsedInstruction.Category)
         {
-            return CompileRTypeInstruction(parsedInstruction);
-        }
-        else if (Instructions.ITypeInstructions.ContainsKey(opcode))
-        {
-            return CompileITypeInstruction(parsedInstruction);
-        }
-        else if (Instructions.JTypeInstructions.ContainsKey(opcode))
-        {
-            return CompileJTypeInstruction(parsedInstruction);
-        }
-        else
-        {
-            throw new Exception($"Unknown instruction: {instruction}");
+            case "Register":
+                return CompileRTypeInstruction(parsedInstruction);
+            case "Immediate":
+            case "LoadStore":
+            case "LoadUpperImmediate":
+                return CompileITypeInstruction(parsedInstruction);
+            case "Branch":
+                return CompileBranchInstruction(parsedInstruction, labels, currentAddress);
+            case "Jump":
+                return CompileJTypeInstruction(parsedInstruction, labels, currentAddress);
+            default:
+                throw new Exception($"Unknown instruction category: {parsedInstruction.Category}");
         }
     }
+
+    private static string CompileBranchInstruction(dynamic parsedInstruction, Dictionary<string, int> labels, int currentAddress)
+    {
+        var opcodeValue = Instructions.ITypeInstructions[parsedInstruction.Opcode].Opcode;
+
+        if (!labels.ContainsKey(parsedInstruction.TargetLabel))
+        {
+            throw new Exception($"Undefined label: {parsedInstruction.TargetLabel}");
+        }
+
+        int targetAddress = labels[parsedInstruction.TargetLabel];
+        int offset = targetAddress - (currentAddress + 1);
+
+        var rsValue = Registers.RegisterMap[parsedInstruction.Rs];
+        var rtValue = Registers.RegisterMap[parsedInstruction.Rt];
+
+        // Convert offset to a 16-bit two's complement binary string
+        string offsetBinary = Convert.ToString((short)offset, 2).PadLeft(16, '0');
+
+        return opcodeValue + rsValue + rtValue + offsetBinary;
+    }
+
+
 
     private static string CompileRTypeInstruction(dynamic parsedInstruction)
     {
@@ -117,10 +187,26 @@ public static class Compiler
         }
     }
 
-    private static string CompileJTypeInstruction(dynamic parsedInstruction)
+    private static string CompileJTypeInstruction(dynamic parsedInstruction, Dictionary<string, int> labels, int currentAddress)
     {
         var opcodeValue = Instructions.JTypeInstructions[parsedInstruction.Opcode].Opcode;
-        return opcodeValue + ConvertImmediateToBinary(parsedInstruction.Target, 26);
+
+        if (parsedInstruction.TargetLabel != null)
+        {
+            if (!labels.ContainsKey(parsedInstruction.TargetLabel))
+            {
+                throw new Exception($"Undefined label: {parsedInstruction.TargetLabel}");
+            }
+
+            int targetAddress = labels[parsedInstruction.TargetLabel];
+            int offset = targetAddress - (currentAddress + 1);
+            return opcodeValue + Convert.ToString(offset, 2).PadLeft(26, '0');
+        }
+        else
+        {
+            int targetAddress = int.Parse(parsedInstruction.Target);
+            return opcodeValue + Convert.ToString(targetAddress, 2).PadLeft(26, '0');
+        }
     }
 
     public static string ConvertImmediateToBinary(string immediate, int length)
