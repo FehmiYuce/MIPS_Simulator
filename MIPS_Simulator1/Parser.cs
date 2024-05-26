@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace MIPS_Simulator1
@@ -40,7 +39,6 @@ namespace MIPS_Simulator1
             Regex multDivRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
             Regex mfRegex = new Regex(@"^mf(\w+)\s+\$(\w+)$", RegexOptions.IgnoreCase);
             Regex jumpRegex = new Regex(@"^jr\s+\$(\w+)$", RegexOptions.IgnoreCase);
-            
 
             Match rTypeMatches = rTypeRegex.Match(instruction);
             Match shiftMatches = shiftRegex.Match(instruction);
@@ -136,7 +134,6 @@ namespace MIPS_Simulator1
             }
         }
 
-
         private static dynamic ParseJtype(string instruction)
         {
             // Regex for J-type instruction with label
@@ -164,6 +161,6 @@ namespace MIPS_Simulator1
                 return null;
             }
         }
-
     }
 }
+

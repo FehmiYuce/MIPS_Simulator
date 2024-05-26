@@ -24,20 +24,23 @@ namespace MIPS_Simulator1
 
         private void button1_Click(object sender, EventArgs e) // Load button
         {
-
-
-
             string[] assemblyCodeArray = textBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
             List<string> assemblyCode = assemblyCodeArray.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
 
             // Etiketlerin (labels) iþlenmesi
-            //assemblyCode = ProcessLabels(assemblyCode);
+            // assemblyCode = ProcessLabels(assemblyCode);
 
             List<string> hexMachineCode = Compiler.CompileToHex(assemblyCode);
             List<string> binMachineCode = Compiler.CompileToBin(assemblyCode);
 
             // Convert the binary machine code to an int array
-            int[] binMachineCodeInts = binMachineCode.Select(bin => Convert.ToInt32(bin, 2)).ToArray();
+            int[] binMachineCodeInts = binMachineCode.Select(bin =>
+            {
+                // Parse binary string to ulong first
+                ulong parsedValue = Convert.ToUInt64(bin, 2);
+                // Cast to uint and then to int with unchecked context
+                return unchecked((int)(uint)parsedValue);
+            }).ToArray();
 
             mips.SetIM(assemblyCode.ToArray(), binMachineCodeInts);
 
@@ -45,6 +48,7 @@ namespace MIPS_Simulator1
             UpdateDataMemoryTable(mips.DMToHex());
             UpdateRegistersTable();
         }
+
 
         private void button2_Click(object sender, EventArgs e) // Step button
         {

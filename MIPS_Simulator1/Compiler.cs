@@ -1,7 +1,7 @@
-﻿using MIPS_Simulator1;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MIPS_Simulator1;
 
 public static class Compiler
 {
@@ -11,7 +11,7 @@ public static class Compiler
         var labels = new Dictionary<string, int>();
         int addressCounter = 0;
 
-        // First pass: record label addresses
+        // İlk geçiş: etiket adreslerini kaydet
         foreach (var instruction in assemblyCode)
         {
             if (instruction.EndsWith(":"))
@@ -25,14 +25,15 @@ public static class Compiler
             }
         }
 
-        // Second pass: compile instructions, resolving labels
+        // İkinci geçiş: etiketleri çözerek talimatları derle
         addressCounter = 0;
         foreach (var instruction in assemblyCode)
         {
             if (!instruction.EndsWith(":"))
             {
                 var compiledInstruction = CompileInstruction(instruction, labels, addressCounter);
-                var hexCode = Convert.ToUInt32(compiledInstruction, 2).ToString("X").PadLeft(8, '0');
+                uint parsedValue = unchecked((uint)Convert.ToInt64(compiledInstruction, 2));
+                var hexCode = parsedValue.ToString("X8");
                 machineCode.Add(hexCode);
                 addressCounter++;
             }
@@ -41,14 +42,13 @@ public static class Compiler
         return machineCode;
     }
 
-
     public static List<string> CompileToBin(List<string> assemblyCode)
     {
         var machineCode = new List<string>();
         var labels = new Dictionary<string, int>();
         int addressCounter = 0;
 
-        // First pass: record label addresses
+        // İlk geçiş: etiket adreslerini kaydet
         foreach (var instruction in assemblyCode)
         {
             if (instruction.EndsWith(":"))
@@ -62,7 +62,7 @@ public static class Compiler
             }
         }
 
-        // Second pass: compile instructions, resolving labels
+        // İkinci geçiş: etiketleri çözerek talimatları derle
         addressCounter = 0;
         foreach (var instruction in assemblyCode)
         {
@@ -92,6 +92,8 @@ public static class Compiler
                 return CompileBranchInstruction(parsedInstruction, labels, currentAddress);
             case "Jump":
                 return CompileJTypeInstruction(parsedInstruction, labels, currentAddress);
+            case "MoveFrom":
+                return CompileMoveFromInstruction(parsedInstruction);
             default:
                 throw new Exception($"Unknown instruction category: {parsedInstruction.Category}");
         }
@@ -117,8 +119,6 @@ public static class Compiler
 
         return opcodeValue + rsValue + rtValue + offsetBinary;
     }
-
-
 
     private static string CompileRTypeInstruction(dynamic parsedInstruction)
     {
@@ -148,13 +148,6 @@ public static class Compiler
                        "00000" +
                        "00000" +
                        functValue;
-            case "MoveFrom":
-                return opcodeValue +
-                       "00000" +
-                       "00000" +
-                       Registers.RegisterMap[parsedInstruction.Rd] +
-                       "00000" +
-                       functValue;
             case "RJump":
                 return opcodeValue +
                        Registers.RegisterMap[parsedInstruction.Rs] +
@@ -165,6 +158,19 @@ public static class Compiler
             default:
                 throw new Exception($"Invalid R-Type instruction: {parsedInstruction}");
         }
+    }
+
+    private static string CompileMoveFromInstruction(dynamic parsedInstruction)
+    {
+        var opcodeValue = Instructions.RTypeInstructions[parsedInstruction.Opcode].Opcode;
+        var functValue = Instructions.RTypeInstructions[parsedInstruction.Opcode].Funct;
+
+        return opcodeValue +
+               "00000" +
+               "00000" +
+               Registers.RegisterMap[parsedInstruction.Rd] +
+               "00000" +
+               functValue;
     }
 
     private static string CompileITypeInstruction(dynamic parsedInstruction)
