@@ -83,6 +83,9 @@ public static class Compiler
         switch (parsedInstruction.Category)
         {
             case "Register":
+            case "Shift":
+            case "MultDiv":
+            case "RJump":
                 return CompileRTypeInstruction(parsedInstruction);
             case "Immediate":
             case "LoadStore":
@@ -223,11 +226,7 @@ public static class Compiler
         }
         else if (immediate.StartsWith("0x"))
         {
-            return Convert.ToString(Convert.ToInt32(immediate.Substring(2), 16), 2).PadLeft(length, '0');
-        }
-        else if (immediate.StartsWith("0b"))
-        {
-            return immediate.Substring(2).PadLeft(length, '0');
+            return Convert.ToString(int.Parse(immediate.Substring(2), System.Globalization.NumberStyles.HexNumber), 2).PadLeft(length, '0');
         }
         else
         {

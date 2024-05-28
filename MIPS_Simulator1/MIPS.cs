@@ -127,6 +127,7 @@ namespace MIPS_Simulator1
         }
 
 
+
         public void Reset()
         {
             // Registerları sıfırla
@@ -502,11 +503,16 @@ namespace MIPS_Simulator1
         }
 
         //bu kodda hata olabilir
+        //private int signedInt(int unsigned)
+        //{
+        //    byte[] uintBytes = BitConverter.GetBytes(unsigned);
+        //    int signed = BitConverter.ToInt32(uintBytes, 0);
+        //    return signed;
+        //}
+
         private int signedInt(int unsigned)
         {
-            byte[] uintBytes = BitConverter.GetBytes(unsigned);
-            int signed = BitConverter.ToInt32(uintBytes, 0);
-            return signed;
+            return BitConverter.ToInt32(BitConverter.GetBytes(unsigned), 0);
         }
 
         public string SignExtend(string inputStr, int initialLen, int finalLen)

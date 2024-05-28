@@ -144,13 +144,13 @@ namespace MIPS_Simulator1
 
 
             public static List<string> RegisterList { get; } = new List<string>
-    {
-        "$zero", "$at", "$v0", "$v1", "$a0", "$a1", "$a2", "$a3",
-        "$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7",
-        "$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7",
-        "$t8", "$t9", "$k0", "$k1", "$gp", "$sp", "$fp", "$ra",
-        "pc", "hi", "lo"
-    };
+            {
+                "$zero", "$at", "$v0", "$v1", "$a0", "$a1", "$a2", "$a3",
+                "$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7",
+                "$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7",
+                "$t8", "$t9", "$k0", "$k1", "$gp", "$sp", "$fp", "$ra",
+                "pc", "hi", "lo"
+            };
         }
 
 
@@ -392,9 +392,18 @@ namespace MIPS_Simulator1
                 string name = registerInfo[i].Name;
                 int number = registerInfo[i].Number;
                 string value = registerValues[i];
+                string valueBinary = HexToBinary(value); // Hexadecimal deðeri ikili forma dönüþtür
 
-                dataGridView1.Rows.Add(name, number >= 0 ? number.ToString() : "", value);
+                dataGridView1.Rows.Add(name, number >= 0 ? number.ToString() : "", value, valueBinary);
             }
+        }
+        // Hexadecimal bir dizeyi ikili forma dönüþtüren yardýmcý bir metot
+        private string HexToBinary(string hexValue)
+        {
+            // Hexadecimal deðeri ikili forma dönüþtür
+            //çarpma iþleminde hata verir burasý
+            string binaryValue = Convert.ToString(Convert.ToInt32(hexValue, 16), 2).PadLeft(32, '0');
+            return binaryValue;
         }
 
         private void UpdateInstructionMemory(List<string> hexMachineCode, List<string> assemblyCode)
