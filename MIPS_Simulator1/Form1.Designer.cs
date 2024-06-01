@@ -35,7 +35,6 @@
             Column1 = new DataGridViewTextBoxColumn();
             Column2 = new DataGridViewTextBoxColumn();
             Column3 = new DataGridViewTextBoxColumn();
-            Column12 = new DataGridViewTextBoxColumn();
             label1 = new Label();
             dataGridView2 = new DataGridView();
             Column4 = new DataGridViewTextBoxColumn();
@@ -74,9 +73,9 @@
             button1.BackgroundImageLayout = ImageLayout.Stretch;
             button1.FlatStyle = FlatStyle.Popup;
             button1.ImageAlign = ContentAlignment.TopLeft;
-            button1.Location = new Point(646, 10);
+            button1.Location = new Point(1139, 24);
             button1.Name = "button1";
-            button1.Size = new Size(199, 28);
+            button1.Size = new Size(244, 28);
             button1.TabIndex = 1;
             button1.Text = "Assemble";
             button1.UseVisualStyleBackColor = false;
@@ -86,7 +85,7 @@
             // 
             dataGridView1.BackgroundColor = Color.White;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3, Column12 });
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3 });
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = SystemColors.Window;
             dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
@@ -96,10 +95,10 @@
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
             dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridView1.GridColor = Color.Black;
-            dataGridView1.Location = new Point(893, 24);
+            dataGridView1.Location = new Point(1430, 24);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            dataGridView1.Size = new Size(473, 592);
+            dataGridView1.Size = new Size(344, 806);
             dataGridView1.TabIndex = 2;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -119,17 +118,11 @@
             Column3.Name = "Column3";
             Column3.ReadOnly = true;
             // 
-            // Column12
-            // 
-            Column12.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Column12.HeaderText = "ValueToBinary";
-            Column12.Name = "Column12";
-            // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(893, 0);
+            label1.Location = new Point(1430, 1);
             label1.Name = "label1";
             label1.Size = new Size(70, 20);
             label1.TabIndex = 3;
@@ -140,9 +133,9 @@
             // 
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView2.Columns.AddRange(new DataGridViewColumn[] { Column4, Column5, Column6 });
-            dataGridView2.Location = new Point(27, 322);
+            dataGridView2.Location = new Point(27, 430);
             dataGridView2.Name = "dataGridView2";
-            dataGridView2.Size = new Size(845, 135);
+            dataGridView2.Size = new Size(1369, 174);
             dataGridView2.TabIndex = 4;
             dataGridView2.CellContentClick += dataGridView2_CellContentClick;
             // 
@@ -168,7 +161,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.Location = new Point(27, 299);
+            label2.Location = new Point(27, 407);
             label2.Name = "label2";
             label2.Size = new Size(140, 20);
             label2.TabIndex = 5;
@@ -179,9 +172,9 @@
             // 
             dataGridView3.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView3.Columns.AddRange(new DataGridViewColumn[] { Column7, Column8, Column9, Column10, Column11 });
-            dataGridView3.Location = new Point(27, 483);
+            dataGridView3.Location = new Point(27, 648);
             dataGridView3.Name = "dataGridView3";
-            dataGridView3.Size = new Size(845, 133);
+            dataGridView3.Size = new Size(1369, 182);
             dataGridView3.TabIndex = 7;
             dataGridView3.CellContentClick += dataGridView3_CellContentClick;
             // 
@@ -219,9 +212,9 @@
             // 
             button2.BackColor = SystemColors.ButtonHighlight;
             button2.FlatStyle = FlatStyle.Popup;
-            button2.Location = new Point(646, 44);
+            button2.Location = new Point(1139, 73);
             button2.Name = "button2";
-            button2.Size = new Size(199, 28);
+            button2.Size = new Size(244, 28);
             button2.TabIndex = 8;
             button2.Text = "Next";
             button2.UseVisualStyleBackColor = false;
@@ -231,9 +224,9 @@
             // 
             button3.BackColor = SystemColors.ButtonHighlight;
             button3.FlatStyle = FlatStyle.Popup;
-            button3.Location = new Point(646, 258);
+            button3.Location = new Point(1139, 350);
             button3.Name = "button3";
-            button3.Size = new Size(199, 27);
+            button3.Size = new Size(244, 27);
             button3.TabIndex = 9;
             button3.Text = "Clear";
             button3.UseVisualStyleBackColor = false;
@@ -243,7 +236,7 @@
             // 
             richTextBox1.Location = new Point(27, 24);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(579, 261);
+            richTextBox1.Size = new Size(1054, 363);
             richTextBox1.TabIndex = 10;
             richTextBox1.Text = "";
             // 
@@ -251,17 +244,18 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label4.Location = new Point(27, 460);
+            label4.Location = new Point(27, 616);
             label4.Name = "label4";
             label4.Size = new Size(104, 20);
             label4.TabIndex = 11;
             label4.Text = "Data Memory";
+            label4.Click += label4_Click;
             // 
             // pictureBox1
             // 
             pictureBox1.BackgroundImage = (Image)resources.GetObject("pictureBox1.BackgroundImage");
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox1.Location = new Point(612, 78);
+            pictureBox1.Location = new Point(1087, 120);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(28, 28);
             pictureBox1.TabIndex = 12;
@@ -271,7 +265,7 @@
             // 
             pictureBox2.BackgroundImage = (Image)resources.GetObject("pictureBox2.BackgroundImage");
             pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox2.Location = new Point(612, 45);
+            pictureBox2.Location = new Point(1087, 72);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(28, 29);
             pictureBox2.TabIndex = 13;
@@ -281,7 +275,7 @@
             // 
             pictureBox3.BackgroundImage = (Image)resources.GetObject("pictureBox3.BackgroundImage");
             pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox3.Location = new Point(612, 257);
+            pictureBox3.Location = new Point(1087, 349);
             pictureBox3.Name = "pictureBox3";
             pictureBox3.Size = new Size(28, 28);
             pictureBox3.TabIndex = 14;
@@ -291,9 +285,9 @@
             // 
             pictureBox4.BackgroundImage = (Image)resources.GetObject("pictureBox4.BackgroundImage");
             pictureBox4.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox4.Location = new Point(646, 114);
+            pictureBox4.Location = new Point(1139, 175);
             pictureBox4.Name = "pictureBox4";
-            pictureBox4.Size = new Size(199, 138);
+            pictureBox4.Size = new Size(244, 146);
             pictureBox4.TabIndex = 15;
             pictureBox4.TabStop = false;
             // 
@@ -301,9 +295,9 @@
             // 
             button4.BackColor = Color.White;
             button4.FlatStyle = FlatStyle.Popup;
-            button4.Location = new Point(646, 78);
+            button4.Location = new Point(1139, 120);
             button4.Name = "button4";
-            button4.Size = new Size(199, 30);
+            button4.Size = new Size(244, 30);
             button4.TabIndex = 16;
             button4.Text = "Run All";
             button4.UseVisualStyleBackColor = false;
@@ -313,7 +307,7 @@
             // 
             pictureBox5.BackgroundImage = (Image)resources.GetObject("pictureBox5.BackgroundImage");
             pictureBox5.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox5.Location = new Point(612, 12);
+            pictureBox5.Location = new Point(1087, 24);
             pictureBox5.Name = "pictureBox5";
             pictureBox5.Size = new Size(28, 27);
             pictureBox5.TabIndex = 17;
@@ -388,6 +382,5 @@
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
         private DataGridViewTextBoxColumn Column3;
-        private DataGridViewTextBoxColumn Column12;
     }
 }

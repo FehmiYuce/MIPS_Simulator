@@ -54,7 +54,7 @@ namespace MIPS_Simulator1
         // Deðiþen register hücrelerini takip etmek için bir liste ekleyin
         private List<DataGridViewCell> changedCells = new List<DataGridViewCell>();
 
-        private void HighlightChangedCellsInColumn3()
+        private void HighlightChangedCellsInColumn3() //valueyi göstermek için
         {
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
@@ -103,7 +103,7 @@ namespace MIPS_Simulator1
             HighlightChangedCellsInColumn3();
         }
 
-        
+
 
         // Deðiþen register hücrelerini vurgulayan metot
         private void HighlightChangedRegisterCells(string[] oldValues)
@@ -155,31 +155,31 @@ namespace MIPS_Simulator1
 
 
 
-        private void HighlightRowByResult()
-        {
-            // Her bir satýr için sonucu kontrol et
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                string result = GetResultFromRow(row);
-                if (result == null)
-                {
-                    // Satýrýn sonucu yoksa varsayýlan arka plan rengini kullan
-                    row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
-                }
-                else
-                {
-                    // Satýrýn sonucuna göre arka plan rengini belirle
-                    if (result == "DesiredResult") // Burada "DesiredResult" sonucunu kontrol ediyoruz
-                    {
-                        row.DefaultCellStyle.BackColor = Color.BlueViolet; // Örnek olarak mavi-mor renk kullandým
-                    }
-                    else
-                    {
-                        row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
-                    }
-                }
-            }
-        }
+        //private void HighlightRowByResult() 
+        //{
+        //    // Her bir satýr için sonucu kontrol et
+        //    foreach (DataGridViewRow row in dataGridView1.Rows)
+        //    {
+        //        string result = GetResultFromRow(row);
+        //        if (result == null)
+        //        {
+        //            // Satýrýn sonucu yoksa varsayýlan arka plan rengini kullan
+        //            row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+        //        }
+        //        else
+        //        {
+        //            // Satýrýn sonucuna göre arka plan rengini belirle
+        //            if (result == "DesiredResult") // Burada "DesiredResult" sonucunu kontrol ediyoruz
+        //            {
+        //                row.DefaultCellStyle.BackColor = Color.BlueViolet; // Örnek olarak mavi-mor renk kullandým
+        //            }
+        //            else
+        //            {
+        //                row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+        //            }
+        //        }
+        //    }
+        //}
 
         // DataGridView'deki bir satýrdan sonucu almak için bu metodu kullanabiliriz
         private string GetResultFromRow(DataGridViewRow row)
@@ -235,7 +235,7 @@ namespace MIPS_Simulator1
             currentLineIndex++;
         }
 
-        private void ClearRowHighlight(int rowIndex)
+        private void ClearRowHighlight(int rowIndex) // geçtikçe bir önceki satýrýn rengini siliyor
         {
             if (rowIndex >= 0 && rowIndex < richTextBox1.Lines.Length)
             {
@@ -342,7 +342,7 @@ namespace MIPS_Simulator1
         //    return finalCode;
         //}
 
-      
+
 
 
 
@@ -392,9 +392,9 @@ namespace MIPS_Simulator1
                 string name = registerInfo[i].Name;
                 int number = registerInfo[i].Number;
                 string value = registerValues[i];
-                string valueBinary = HexToBinary(value); // Hexadecimal deðeri ikili forma dönüþtür
+                //string valueBinary = HexToBinary(value); // Hexadecimal deðeri ikili forma dönüþtür
 
-                dataGridView1.Rows.Add(name, number >= 0 ? number.ToString() : "", value, valueBinary);
+                dataGridView1.Rows.Add(name, number >= 0 ? number.ToString() : "", value);
             }
         }
         // Hexadecimal bir dizeyi ikili forma dönüþtüren yardýmcý bir metot
@@ -416,7 +416,7 @@ namespace MIPS_Simulator1
                 string machineCode = hexMachineCode[i];
                 string source = assemblyCode[i];
 
-                dataGridView2.Rows.Add(address, machineCode, source);
+                dataGridView2.Rows.Add(address, "0x" + machineCode, source);
             }
         }
 
@@ -513,6 +513,7 @@ namespace MIPS_Simulator1
             // Ýþaretçileri ve indeksleri sýfýrla
             currentRowIndex = -1;
             currentInstructionIndex = 0;
+            currentLineIndex = 0;
 
             // MIPS nesnesini sýfýrla
             mips.Reset();
@@ -526,7 +527,7 @@ namespace MIPS_Simulator1
             // Veri belleði tablosunu yeniden baþlat
             InitializeDMTable();
 
-           
+
 
             ClearChangedCellHighlights();
 
@@ -580,5 +581,9 @@ namespace MIPS_Simulator1
             HighlightChangedCellsInColumn3();
         }
 
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
