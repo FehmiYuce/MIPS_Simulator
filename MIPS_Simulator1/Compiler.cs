@@ -32,7 +32,7 @@ public static class Compiler
             if (!instruction.EndsWith(":"))
             {
                 var compiledInstruction = CompileInstruction(instruction, labels, addressCounter);
-                uint parsedValue = unchecked((uint)Convert.ToInt64(compiledInstruction, 2));
+                uint parsedValue = unchecked((uint)Convert.ToUInt32(compiledInstruction, 2));
                 var hexCode = parsedValue.ToString("X8");
                 machineCode.Add(hexCode);
                 addressCounter++;
@@ -69,12 +69,19 @@ public static class Compiler
             if (!instruction.EndsWith(":"))
             {
                 machineCode.Add(CompileInstruction(instruction, labels, addressCounter));
-                addressCounter++;
             }
+            else
+            {
+                // Etiket satırıysa, adresleme yapmadan geç
+                continue;
+            }
+            addressCounter++;
         }
 
         return machineCode;
     }
+
+
 
     public static string CompileInstruction(string instruction, Dictionary<string, int> labels, int currentAddress)
     {

@@ -1,8 +1,8 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Drawing; // Bu satırı ekleyin
+using System.Drawing; // Bu satÃ½rÃ½ ekleyin
 
 
 namespace MIPS_Simulator1
@@ -11,8 +11,8 @@ namespace MIPS_Simulator1
     {
         private MIPS mips;
         private Dictionary<string, int> registers;
-        private int currentRowIndex = -1; // Başlangıçta işaretçi yok
-        int currentInstructionIndex = 0; // İşlem sırasının başlangıçta 0 olduğunu varsayalım
+        private int currentRowIndex = -1; // BaÃ¾langÃ½Ã§ta iÃ¾aretÃ§i yok
+        int currentInstructionIndex = 0; // ÃÃ¾lem sÃ½rasÃ½nÃ½n baÃ¾langÃ½Ã§ta 0 olduÃ°unu varsayalÃ½m
 
         public Form1()
         {
@@ -29,8 +29,8 @@ namespace MIPS_Simulator1
             string[] assemblyCodeArray = richTextBox1.Text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
             List<string> assemblyCode = assemblyCodeArray.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
 
-            // Etiketlerin (labels) işlenmesi
-            // assemblyCode = ProcessLabels(assemblyCode);
+            // Etiketlerin (labels) iÃ¾lenmesi
+            // assemblyCode = Compiler.CompileToHex(assemblyCode);
 
             List<string> hexMachineCode = Compiler.CompileToHex(assemblyCode);
             List<string> binMachineCode = Compiler.CompileToBin(assemblyCode);
@@ -39,7 +39,7 @@ namespace MIPS_Simulator1
             int[] binMachineCodeInts = binMachineCode.Select(bin =>
             {
                 // Parse binary string to ulong first
-                ulong parsedValue = Convert.ToUInt64(bin, 2);
+                ulong parsedValue = Convert.ToUInt32(bin, 2);
                 // Cast to uint and then to int with unchecked context
                 return unchecked((int)(uint)parsedValue);
             }).ToArray();
@@ -51,33 +51,33 @@ namespace MIPS_Simulator1
             UpdateRegistersTable();
         }
 
-        // Değişen register hücrelerini takip etmek için bir liste ekleyin
+        // DeÃ°iÃ¾en register hÃ¼crelerini takip etmek iÃ§in bir liste ekleyin
         private List<DataGridViewCell> changedCells = new List<DataGridViewCell>();
 
-        private void HighlightChangedCellsInColumn3() //valueyi göstermek için
+        private void HighlightChangedCellsInColumn3() //valueyi gÃ¶stermek iÃ§in
         {
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
-                string cellValue = row.Cells[2].Value?.ToString(); // 3. sütundaki değeri alın
+                string cellValue = row.Cells[2].Value?.ToString(); // 3. sÃ¼tundaki deÃ°eri alÃ½n
 
-                // Önceki değeri depolamak için her satır için bir etiket oluşturun (Tag)
+                // Ã–nceki deÃ°eri depolamak iÃ§in her satÃ½r iÃ§in bir etiket oluÃ¾turun (Tag)
                 if (cellValue != null)
                     row.Cells[2].Tag = cellValue;
 
-                // Değişen hücreleri vurgulayın
+                // DeÃ°iÃ¾en hÃ¼creleri vurgulayÃ½n
                 if (row.Cells[2].Tag != null && cellValue != row.Cells[2].Tag.ToString())
                 {
-                    row.Cells[2].Style.BackColor = Color.Green; // Değişen hücreleri vurgula
+                    row.Cells[2].Style.BackColor = Color.Green; // DeÃ°iÃ¾en hÃ¼creleri vurgula
                 }
                 else
                 {
-                    row.Cells[2].Style.BackColor = dataGridView1.DefaultCellStyle.BackColor; // Değişmeyen hücreleri varsayılan renge geri dön
+                    row.Cells[2].Style.BackColor = dataGridView1.DefaultCellStyle.BackColor; // DeÃ°iÃ¾meyen hÃ¼creleri varsayÃ½lan renge geri dÃ¶n
                 }
             }
         }
 
 
-        private int currentLineIndex = 0; // Başlangıçta 0. satırdan başlayalım
+        private int currentLineIndex = 0; // BaÃ¾langÃ½Ã§ta 0. satÃ½rdan baÃ¾layalÃ½m
 
         private string[] oldRegisterValues;
         private void button2_Click(object sender, EventArgs e) // Step button
@@ -88,16 +88,16 @@ namespace MIPS_Simulator1
 
             oldRegisterValues = mips.RegToHex().ToArray();
 
-            // Önceki satırın vurgusunu temizle
+            // Ã–nceki satÃ½rÃ½n vurgusunu temizle
             ClearRowHighlight(currentLineIndex - 1);
 
-            // Yeni satırın vurgusunu yap
+            // Yeni satÃ½rÃ½n vurgusunu yap
             HighlightCurrentLine();
 
-            // Satırı işaretle
+            // SatÃ½rÃ½ iÃ¾aretle
             UpdateInstructionPointer(currentLineIndex);
 
-            // Değişen register hücrelerini vurgula
+            // DeÃ°iÃ¾en register hÃ¼crelerini vurgula
             HighlightChangedRegisterCells(oldRegisterValues);
 
             HighlightChangedCellsInColumn3();
@@ -105,7 +105,7 @@ namespace MIPS_Simulator1
 
 
 
-        // Değişen register hücrelerini vurgulayan metot
+        // DeÃ°iÃ¾en register hÃ¼crelerini vurgulayan metot
         private void HighlightChangedRegisterCells(string[] oldValues)
         {
             var newRegisterValues = mips.RegToHex().ToArray();
@@ -118,8 +118,8 @@ namespace MIPS_Simulator1
                     {
                         if (row.Cells[0].Value.ToString() == Registers.RegisterList[i])
                         {
-                            row.Cells[2].Style.BackColor = Color.LightPink; // Vurgulamak için sarı rengi kullan
-                            changedCells.Add(row.Cells[2]); // Değişen hücreyi listeye ekle
+                            row.Cells[2].Style.BackColor = Color.LightPink; // Vurgulamak iÃ§in sarÃ½ rengi kullan
+                            changedCells.Add(row.Cells[2]); // DeÃ°iÃ¾en hÃ¼creyi listeye ekle
                         }
                     }
                 }
@@ -157,21 +157,21 @@ namespace MIPS_Simulator1
 
         //private void HighlightRowByResult() 
         //{
-        //    // Her bir satır için sonucu kontrol et
+        //    // Her bir satÃ½r iÃ§in sonucu kontrol et
         //    foreach (DataGridViewRow row in dataGridView1.Rows)
         //    {
         //        string result = GetResultFromRow(row);
         //        if (result == null)
         //        {
-        //            // Satırın sonucu yoksa varsayılan arka plan rengini kullan
+        //            // SatÃ½rÃ½n sonucu yoksa varsayÃ½lan arka plan rengini kullan
         //            row.DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
         //        }
         //        else
         //        {
-        //            // Satırın sonucuna göre arka plan rengini belirle
+        //            // SatÃ½rÃ½n sonucuna gÃ¶re arka plan rengini belirle
         //            if (result == "DesiredResult") // Burada "DesiredResult" sonucunu kontrol ediyoruz
         //            {
-        //                row.DefaultCellStyle.BackColor = Color.BlueViolet; // Örnek olarak mavi-mor renk kullandım
+        //                row.DefaultCellStyle.BackColor = Color.BlueViolet; // Ã–rnek olarak mavi-mor renk kullandÃ½m
         //            }
         //            else
         //            {
@@ -181,15 +181,15 @@ namespace MIPS_Simulator1
         //    }
         //}
 
-        // DataGridView'deki bir satırdan sonucu almak için bu metodu kullanabiliriz
+        // DataGridView'deki bir satÃ½rdan sonucu almak iÃ§in bu metodu kullanabiliriz
         private string GetResultFromRow(DataGridViewRow row)
         {
-            // Örneğin, 3. hücredeki değeri sonuç olarak alalım
+            // Ã–rneÃ°in, 3. hÃ¼credeki deÃ°eri sonuÃ§ olarak alalÃ½m
             if (row.Cells.Count > 2 && row.Cells[2].Value != null)
             {
                 return row.Cells[2].Value.ToString();
             }
-            return null; // Eğer sonuç yoksa null döndür
+            return null; // EÃ°er sonuÃ§ yoksa null dÃ¶ndÃ¼r
         }
 
 
@@ -207,19 +207,19 @@ namespace MIPS_Simulator1
 
         private string ProcessLineAndGetResult(string line)
         {
-            // Burada satırın işlenmesi ve sonucun elde edilmesi işlemlerini yapın
-            // Örneğin:
+            // Burada satÃ½rÃ½n iÃ¾lenmesi ve sonucun elde edilmesi iÃ¾lemlerini yapÃ½n
+            // Ã–rneÃ°in:
             // string result = ProcessLine(line);
             // return result;
 
-            // Burada örnek bir sonuç döndürüyorum, siz gerçek işlemlerinizi burada yapmalısınız
+            // Burada Ã¶rnek bir sonuÃ§ dÃ¶ndÃ¼rÃ¼yorum, siz gerÃ§ek iÃ¾lemlerinizi burada yapmalÃ½sÃ½nÃ½z
             return "ResultValue";
         }
 
 
         private void HighlightCurrentLine()
         {
-            // Aktif satırı vurgula
+            // Aktif satÃ½rÃ½ vurgula
             if (currentLineIndex < richTextBox1.Lines.Length)
             {
                 richTextBox1.Select(richTextBox1.GetFirstCharIndexFromLine(currentLineIndex), richTextBox1.Lines[currentLineIndex].Length);
@@ -227,15 +227,15 @@ namespace MIPS_Simulator1
             }
             else
             {
-                // Eğer tüm satırlar vurgulanmışsa, başa dön
+                // EÃ°er tÃ¼m satÃ½rlar vurgulanmÃ½Ã¾sa, baÃ¾a dÃ¶n
                 currentLineIndex = 0;
             }
 
-            // Bir sonraki satıra geç
+            // Bir sonraki satÃ½ra geÃ§
             currentLineIndex++;
         }
 
-        private void ClearRowHighlight(int rowIndex) // geçtikçe bir önceki satırın rengini siliyor
+        private void ClearRowHighlight(int rowIndex) // geÃ§tikÃ§e bir Ã¶nceki satÃ½rÃ½n rengini siliyor
         {
             if (rowIndex >= 0 && rowIndex < richTextBox1.Lines.Length)
             {
@@ -249,38 +249,38 @@ namespace MIPS_Simulator1
 
 
 
-        // İşlem sırasını güncelleme
-        private void UpdateInstructionPointer(int currentInstructionIndex) //Instruction Memoryi işaretler.
+        // ÃÃ¾lem sÃ½rasÃ½nÃ½ gÃ¼ncelleme
+        private void UpdateInstructionPointer(int currentInstructionIndex) //Instruction Memoryi iÃ¾aretler.
         {
-            // Önceki işaretçiyi kaldır
+            // Ã–nceki iÃ¾aretÃ§iyi kaldÃ½r
             if (currentRowIndex != -1 && currentRowIndex < dataGridView2.Rows.Count)
             {
                 dataGridView2.Rows[currentRowIndex].DefaultCellStyle.BackColor = dataGridView2.DefaultCellStyle.BackColor;
             }
 
-            // Yeni işaretçiyi ayarla
+            // Yeni iÃ¾aretÃ§iyi ayarla
             if (currentInstructionIndex >= 0 && currentInstructionIndex < dataGridView2.Rows.Count)
             {
                 dataGridView2.Rows[currentInstructionIndex].DefaultCellStyle.BackColor = Color.White;
-                currentRowIndex = currentInstructionIndex; // Yeni işaretçiyi güncelle
+                currentRowIndex = currentInstructionIndex; // Yeni iÃ¾aretÃ§iyi gÃ¼ncelle
             }
         }
 
         private void UpdateRegisterPointer(string registerName)
         {
-            // Önceki işaretçiyi kaldır
+            // Ã–nceki iÃ¾aretÃ§iyi kaldÃ½r
             if (currentRowIndex != -1 && currentRowIndex < dataGridView1.Rows.Count)
             {
                 dataGridView1.Rows[currentRowIndex].DefaultCellStyle.BackColor = dataGridView1.DefaultCellStyle.BackColor;
             }
 
-            // Yeni işaretçiyi ayarla
+            // Yeni iÃ¾aretÃ§iyi ayarla
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
                 if (row.Cells[0].Value != null && row.Cells[0].Value.ToString() == registerName)
                 {
                     row.DefaultCellStyle.BackColor = Color.White;
-                    currentRowIndex = row.Index; // Yeni işaretçiyi güncelle
+                    currentRowIndex = row.Index; // Yeni iÃ¾aretÃ§iyi gÃ¼ncelle
                     break;
                 }
             }
@@ -289,7 +289,7 @@ namespace MIPS_Simulator1
 
 
 
-        // Etiketlerin (labels) işlenmesi
+        // Etiketlerin (labels) iÃ¾lenmesi
         //private List<string> ProcessLabels(List<string> assemblyCode)
         //{
         //    Dictionary<string, int> labels = new Dictionary<string, int>();
@@ -373,7 +373,7 @@ namespace MIPS_Simulator1
             string hiValue = mips.HiToHex().ToString();
             string loValue = mips.LoToHex().ToString();
 
-            // Değerleri registerValues dizisine ekleyin
+            // DeÃ°erleri registerValues dizisine ekleyin
             registerValues = registerValues.Concat(new string[] { pcValue, hiValue, loValue }).ToArray();
 
             dataGridView1.Rows.Clear();
@@ -392,16 +392,17 @@ namespace MIPS_Simulator1
                 string name = registerInfo[i].Name;
                 int number = registerInfo[i].Number;
                 string value = registerValues[i];
-                //string valueBinary = HexToBinary(value); // Hexadecimal değeri ikili forma dönüştür
+                //string valueBinary = HexToBinary(value); // Hexadecimal deÃ°eri ikili forma dÃ¶nÃ¼Ã¾tÃ¼r
+                int decimalValue = Convert.ToInt32(registerValues[i], 16);
 
-                dataGridView1.Rows.Add(name, number >= 0 ? number.ToString() : "", value);
+                dataGridView1.Rows.Add(name, number >= 0 ? number.ToString() : "", value, decimalValue);
             }
         }
-        // Hexadecimal bir dizeyi ikili forma dönüştüren yardımcı bir metot
+        // Hexadecimal bir dizeyi ikili forma dÃ¶nÃ¼Ã¾tÃ¼ren yardÃ½mcÃ½ bir metot
         private string HexToBinary(string hexValue)
         {
-            // Hexadecimal değeri ikili forma dönüştür
-            //çarpma işleminde hata verir burası
+            // Hexadecimal deÃ°eri ikili forma dÃ¶nÃ¼Ã¾tÃ¼r
+            //Ã§arpma iÃ¾leminde hata verir burasÃ½
             string binaryValue = Convert.ToString(Convert.ToInt32(hexValue, 16), 2).PadLeft(32, '0');
             return binaryValue;
         }
@@ -467,15 +468,15 @@ namespace MIPS_Simulator1
 
         private void UpdateDataMemoryTable(string[] dataMemory)
         {
-            int rowCount = dataMemory.Length; // DataMemory'den gelen veri sayısı
+            int rowCount = dataMemory.Length; // DataMemory'den gelen veri sayÃ½sÃ½
 
-            // Veri belleği tablosunun satır sayısını kontrol et
+            // Veri belleÃ°i tablosunun satÃ½r sayÃ½sÃ½nÃ½ kontrol et
             if (dataGridView3.Rows.Count != rowCount)
             {
-                // Eğer tablonun satır sayısı, veri sayısına eşit değilse, satır sayısını güncelle
+                // EÃ°er tablonun satÃ½r sayÃ½sÃ½, veri sayÃ½sÃ½na eÃ¾it deÃ°ilse, satÃ½r sayÃ½sÃ½nÃ½ gÃ¼ncelle
                 dataGridView3.Rows.Clear(); // Tabloyu temizle
 
-                // Her bir veri için bir satır oluştur ve tabloya ekle
+                // Her bir veri iÃ§in bir satÃ½r oluÃ¾tur ve tabloya ekle
                 for (int i = 0; i < rowCount; i++)
                 {
                     string address = "0x" + (i * 4).ToString("X8"); // Adresi hesapla
@@ -483,16 +484,16 @@ namespace MIPS_Simulator1
                 }
             }
 
-            // Verileri tabloya yerleştir
+            // Verileri tabloya yerleÃ¾tir
             for (int i = 0; i < rowCount; i++)
             {
-                string[] values = dataMemory[i].Split(' '); // DataMemory'den gelen veriyi bölelim
+                string[] values = dataMemory[i].Split(' '); // DataMemory'den gelen veriyi bÃ¶lelim
                 for (int j = 0; j < values.Length; j++)
                 {
-                    dataGridView3.Rows[i].Cells[j + 1].Value = values[j]; // Veriyi hücrelere yerleştir
+                    dataGridView3.Rows[i].Cells[j + 1].Value = values[j]; // Veriyi hÃ¼crelere yerleÃ¾tir
                 }
 
-                // Eğer hücrelerin geri kalanı boşsa, onları da "0x00000000" ile doldur
+                // EÃ°er hÃ¼crelerin geri kalanÃ½ boÃ¾sa, onlarÃ½ da "0x00000000" ile doldur
                 for (int j = values.Length; j < 4; j++)
                 {
                     dataGridView3.Rows[i].Cells[j + 1].Value = "0x00000000";
@@ -502,29 +503,29 @@ namespace MIPS_Simulator1
 
         private void button3_Click(object sender, EventArgs e)
         {
-            // TextBox'ı temizle
+            // TextBox'Ã½ temizle
             richTextBox1.Text = "";
 
-            // DataGridView'ları temizle
+            // DataGridView'larÃ½ temizle
             dataGridView1.Rows.Clear();
             dataGridView2.Rows.Clear();
             dataGridView3.Rows.Clear();
 
-            // İşaretçileri ve indeksleri sıfırla
+            // ÃÃ¾aretÃ§ileri ve indeksleri sÃ½fÃ½rla
             currentRowIndex = -1;
             currentInstructionIndex = 0;
             currentLineIndex = 0;
 
-            // MIPS nesnesini sıfırla
+            // MIPS nesnesini sÃ½fÃ½rla
             mips.Reset();
 
-            // Register tablosunu güncelle
+            // Register tablosunu gÃ¼ncelle
             UpdateRegistersTable();
 
-            // Talimat belleği tablosunu yeniden başlat
+            // Talimat belleÃ°i tablosunu yeniden baÃ¾lat
             InitializeIMTable();
 
-            // Veri belleği tablosunu yeniden başlat
+            // Veri belleÃ°i tablosunu yeniden baÃ¾lat
             InitializeDMTable();
 
 
@@ -534,7 +535,7 @@ namespace MIPS_Simulator1
 
         }
 
-        // Değişen hücrelerin vurgusunu temizleyen metot
+        // DeÃ°iÃ¾en hÃ¼crelerin vurgusunu temizleyen metot
         private void ClearChangedCellHighlights()
         {
             foreach (var cell in changedCells)
@@ -551,10 +552,10 @@ namespace MIPS_Simulator1
 
         private void button4_Click(object sender, EventArgs e)
         {
-            // Öncelikle işlemi yap
+            // Ã–ncelikle iÃ¾lemi yap
             mips.RunUntilEnd();
             UpdateRegistersTable();
-            // Sonucu DataGridView'e yazdır
+            // Sonucu DataGridView'e yazdÃ½r
             string[] sonuc = mips.RegToHex();
             string pcValue = mips.PCToHex().ToString();
             string hiValue = mips.HiToHex().ToString();
@@ -575,7 +576,7 @@ namespace MIPS_Simulator1
             {
                 string name = registerInfo[i].Name;
                 int number = registerInfo[i].Number;
-                dataGridView1.Rows.Add(name, number, sonuc[i]); // Boş name ve number, sonuç sütununa yazılır
+                dataGridView1.Rows.Add(name, number, sonuc[i]); // BoÃ¾ name ve number, sonuÃ§ sÃ¼tununa yazÃ½lÃ½r
             }
 
             HighlightChangedCellsInColumn3();

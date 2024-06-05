@@ -35,6 +35,7 @@
             Column1 = new DataGridViewTextBoxColumn();
             Column2 = new DataGridViewTextBoxColumn();
             Column3 = new DataGridViewTextBoxColumn();
+            Column12 = new DataGridViewTextBoxColumn();
             label1 = new Label();
             dataGridView2 = new DataGridView();
             Column4 = new DataGridViewTextBoxColumn();
@@ -85,7 +86,7 @@
             // 
             dataGridView1.BackgroundColor = Color.White;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3 });
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Column1, Column2, Column3, Column12 });
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = SystemColors.Window;
             dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F);
@@ -98,7 +99,7 @@
             dataGridView1.Location = new Point(1430, 24);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            dataGridView1.Size = new Size(344, 806);
+            dataGridView1.Size = new Size(375, 806);
             dataGridView1.TabIndex = 2;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -117,6 +118,11 @@
             Column3.HeaderText = "Value";
             Column3.Name = "Column3";
             Column3.ReadOnly = true;
+            // 
+            // Column12
+            // 
+            Column12.HeaderText = "Decimal";
+            Column12.Name = "Column12";
             // 
             // label1
             // 
@@ -163,9 +169,9 @@
             label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label2.Location = new Point(27, 407);
             label2.Name = "label2";
-            label2.Size = new Size(140, 20);
+            label2.Size = new Size(145, 20);
             label2.TabIndex = 5;
-            label2.Text = "Instrucion Memory";
+            label2.Text = "Instruction Memory";
             label2.Click += label2_Click;
             // 
             // dataGridView3
@@ -382,5 +388,6 @@
         private DataGridViewTextBoxColumn Column1;
         private DataGridViewTextBoxColumn Column2;
         private DataGridViewTextBoxColumn Column3;
+        private DataGridViewTextBoxColumn Column12;
     }
 }

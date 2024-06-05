@@ -293,6 +293,7 @@ namespace MIPS_Simulator1
             pc = reg[rs];
         }
 
+
         public void Sll()
         {
             reg[rd] = reg[rt] << shamt;
@@ -320,7 +321,7 @@ namespace MIPS_Simulator1
 
         public void Mult()
         {
-            long product = (long)reg[rs] * (long)reg[rt];
+            int product = (int)reg[rs] * (int)reg[rt];
             string binary = Convert.ToString(product, 2).PadLeft(64, '0');
             lo = Convert.ToInt32(binary.Substring(32, 32), 2);
             hi = Convert.ToInt32(binary.Substring(0, 32), 2);
@@ -447,16 +448,42 @@ namespace MIPS_Simulator1
             reg[rt] = reg[rs] * imm;
         }
 
+        //public void J()
+        //{
+        //    pc = (int)((pc & 0xF0000000) | (target << 2));
+        //}
         public void J()
         {
-            pc = (int)((pc & 0xF0000000) | (target << 2));
+            // 28 bit sınırlaması için modülüs
+            int multipliedTarget = (target * 4) % 0x10000000;
+            int directAddress = (int)(multipliedTarget + (pc & 0xF0000000));
+            pc = directAddress;
         }
+
 
         public void Jal()
         {
             reg[31] = pc;
             pc = target;
+
         }
+        //public void Jal()
+        //{
+        //    reg[31] = pc; // Geri dönüş adresini sakla (pc zaten 4 artmış olacak)
+        //    pc = ((int)(pc & 0xF0000000) | (target << 2)); // Hedef adresi hesapla ve pc'yi güncelle
+        //}
+
+        //public void J()
+        //{
+        //    pc = (int)(pc & 0xF0000000) | (target << 2);
+        //}
+
+        //public void Jal()
+        //{
+        //    reg[31] = pc; // Store the address of the next instruction in $ra (pc is already incremented by 4)
+        //    pc = (int)(pc & 0xF0000000) | (target << 2); // Set the pc to the target address
+        //}
+
 
         //output functions
         public string[] RegToHex()
@@ -510,7 +537,7 @@ namespace MIPS_Simulator1
             return signed;
         }
 
-        
+
 
         public string SignExtend(string inputStr, int initialLen, int finalLen)
         {
