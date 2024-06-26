@@ -50,7 +50,7 @@ namespace MIPS_Simulator1
 
         public MIPS()
         {
-            reg = new int[32];
+            reg = new int[8];  // 8 general-purpose registers
             Array.Fill(reg, 0);
             IM = new int[256];
             IM_asm = new string[256];
@@ -82,9 +82,9 @@ namespace MIPS_Simulator1
 
         public void Fetch()
         {
-            instr = Convert.ToString(IM[pc / 4], 2).PadLeft(32, '0');
-            instr_asm = IM_asm[pc / 4];
-            pc += 4;
+            instr = Convert.ToString(IM[pc / 2], 2).PadLeft(16, '0');  // Fetch 16-bit instruction
+            instr_asm = IM_asm[pc / 2];
+            pc += 2;  // Increment program counter by 2
         }
 
         public void Step()
@@ -100,7 +100,7 @@ namespace MIPS_Simulator1
 
         public void RunUntilEnd()
         {
-            while (pc < (IM_len * 4))
+            while (pc < (IM_len * 2))
             {
                 Step();
             }
@@ -108,12 +108,11 @@ namespace MIPS_Simulator1
 
         public void ParseMachineCode()
         {
-            opcode = instr.Substring(0, 6);
-            rs = Convert.ToInt32(instr.Substring(6, 5), 2);
-            rt = Convert.ToInt32(instr.Substring(11, 5), 2);
-            rd = Convert.ToInt32(instr.Substring(16, 5), 2);
-            shamt = Convert.ToInt32(instr.Substring(21, 5));
-            funct = instr.Substring(26, 6);
+            opcode = instr.Substring(0, 4);  // 4-bit opcode
+            rs = Convert.ToInt32(instr.Substring(4, 3), 2);  // 3-bit rs
+            rt = Convert.ToInt32(instr.Substring(7, 3), 2);  // 3-bit rt
+            rd = Convert.ToInt32(instr.Substring(10, 3), 2);  // 3-bit rd
+            funct = instr.Substring(13, 3);  // 3-bit function
 
             var parts = Parser.ParseInstruction(instr_asm);
 
@@ -123,10 +122,8 @@ namespace MIPS_Simulator1
                 imm = signedInt(Convert.ToInt32(parts.Immediate));
             }
 
-            target = Convert.ToInt32(instr.Substring(6, 26), 2);
+            target = Convert.ToInt32(instr.Substring(4, 12), 2);  // 12-bit target for J-type
         }
-
-
 
         public void Reset()
         {
@@ -157,100 +154,78 @@ namespace MIPS_Simulator1
             stepCount = 0;
         }
 
-
         public void Execute()
         {
             switch (opcode)
             {
-                case "000000": // R-type instruction
+                case "0000": // R-type instruction
                     switch (funct)
                     {
-                        case "100000":
+                        case "000":
                             Add();
                             break;
-                        case "100010":
+                        case "001":
                             Sub();
                             break;
-                        case "100100":
+                        case "010":
                             And();
                             break;
-                        case "100101":
+                        case "011":
                             Or();
                             break;
-                        case "100110":
+                        case "100":
                             Xor();
                             break;
-                        case "101010":
+                        case "101":
                             Slt();
                             break;
-                        case "001000":
+                        case "110":
                             Jr();
                             break;
-                        case "000000":
-                            Sll();
-                            break;
-                        case "000010":
-                            Srl();
-                            break;
-                        case "000011":
-                            Sra();
-                            break;
-                        case "010000":
+                        case "111":
                             Mfhi();
                             break;
-                        case "010010":
+                        case "1101":
                             Mflo();
-                            break;
-                        case "011000":
-                            Mult();
-                            break;
-                        case "011010":
-                            Div();
                             break;
                         default:
                             throw new Exception($"Unsupported function code: {funct}");
                     }
                     break;
-                case "000100":
+                case "0100":
                     Beq();
                     break;
-                case "000101":
+                case "0101":
                     Bne();
                     break;
-                case "001000":
+                case "0110":
                     Addi();
                     break;
-                case "001010":
+                case "0111":
                     Slti();
                     break;
-                case "001100":
+                case "1000":
                     Andi();
                     break;
-                case "001101":
+                case "1001":
                     Ori();
                     break;
-                case "001111":
+                case "1010":
                     Lui();
                     break;
-                case "100011":
+                case "1011":
                     Lw();
                     break;
-                case "100000":
-                    Lb();
-                    break;
-                case "101011":
+                case "1100":
                     Sw();
                     break;
-                case "101000":
-                    Sb();
-                    break;
-                case "111000":
+                case "1101":
                     Muli();
                     break;
-                case "000010":
+                case "1110":
                     J();
                     break;
-                case "000011":
+                case "1111":
                     Jal();
                     break;
                 default:
@@ -293,22 +268,6 @@ namespace MIPS_Simulator1
             pc = reg[rs];
         }
 
-
-        public void Sll()
-        {
-            reg[rd] = reg[rt] << shamt;
-        }
-
-        public void Srl()
-        {
-            reg[rd] = (int)((uint)reg[rt] >> shamt);
-        }
-
-        public void Sra()
-        {
-            reg[rd] = reg[rt] >> shamt;
-        }
-
         public void Mfhi()
         {
             reg[rd] = hi;
@@ -319,58 +278,11 @@ namespace MIPS_Simulator1
             reg[rd] = lo;
         }
 
-        public void Mult()
-        {
-            int product = (int)reg[rs] * (int)reg[rt];
-            string binary = Convert.ToString(product, 2).PadLeft(64, '0');
-            lo = Convert.ToInt32(binary.Substring(32, 32), 2);
-            hi = Convert.ToInt32(binary.Substring(0, 32), 2);
-        }
-
-        public void Div()
-        {
-            int dividend = reg[rs];
-            int divisor = reg[rt];
-
-            if (divisor == 0)
-            {
-                throw new DivideByZeroException("Division by zero");
-            }
-
-            int quotient = dividend / divisor;
-            int remainder = dividend % divisor;
-
-            lo = quotient;
-            hi = remainder;
-        }
-
-        //public void Mult()
-        //{
-        //    long product = (long)reg[rs] * (long)reg[rt];
-        //    lo = (int)(product & 0xFFFFFFFF); // Lower 32 bits
-        //    hi = (int)(product >> 32); // Upper 32 bits
-        //}
-
-        //public void Div()
-        //{
-        //    int dividend = reg[rs];
-        //    int divisor = reg[rt];
-
-        //    if (divisor == 0)
-        //    {
-        //        throw new DivideByZeroException("Division by zero");
-        //    }
-
-        //    lo = dividend / divisor; // Quotient
-        //    hi = dividend % divisor; // Remainder
-        //}
-
-
         public void Beq()
         {
             if (reg[rs] == reg[rt])
             {
-                pc += imm << 2; // Address calculation correction
+                pc += imm << 1; // Address calculation correction for 16-bit instructions
             }
         }
 
@@ -378,7 +290,7 @@ namespace MIPS_Simulator1
         {
             if (reg[rs] != reg[rt])
             {
-                pc += imm << 2; // Address calculation correction
+                pc += imm << 1; // Address calculation correction for 16-bit instructions
             }
         }
 
@@ -404,43 +316,17 @@ namespace MIPS_Simulator1
 
         public void Lui()
         {
-            reg[rt] = imm << 16;
+            reg[rt] = imm << 8; // Shift left to place immediate in the upper 8 bits
         }
 
         public void Lw()
         {
-            reg[rt] = DM[(reg[rs] + imm) / 4];
-        }
-
-        public void Lb()
-        {
-            int address = reg[rs] + imm;
-            int wordAddr = address - (address % 4);
-            int word = DM[wordAddr / 4];
-            int start = 2 * (4 - (address % 4)) - 2;
-            int end = 2 * (4 - (address % 4));
-            int shift = (3 - (address % 4)) * 8;
-            int mask = 0xFF << shift;
-            int byteValue = (word & mask) >> shift;
-            reg[rt] = (byteValue << 24) >> 24; // Sign extend to 32 bits
+            reg[rt] = DM[(reg[rs] + imm)];
         }
 
         public void Sw()
         {
-            DM[(reg[rs] + imm) / 4] = reg[rt];
-        }
-
-        public void Sb()
-        {
-            int address = reg[rs] + imm;
-            int wordAddr = address - (address % 4);
-            int word = DM[wordAddr / 4];
-            int start = 2 * (4 - (address % 4)) - 2;
-            int end = 2 * (4 - (address % 4));
-            int byteShift = (3 - (address % 4)) * 8;
-            int mask = 0xFF << byteShift;
-            int newData = (reg[rt] & 0xFF) << byteShift;
-            DM[wordAddr / 4] = (word & ~mask) | newData;
+            DM[(reg[rs] + imm)] = reg[rt];
         }
 
         public void Muli()
@@ -448,50 +334,24 @@ namespace MIPS_Simulator1
             reg[rt] = reg[rs] * imm;
         }
 
-        //public void J()
-        //{
-        //    pc = (int)((pc & 0xF0000000) | (target << 2));
-        //}
         public void J()
         {
-            // 28 bit sınırlaması için modülüs
-            int multipliedTarget = (target * 4) % 0x10000000;
-            int directAddress = (int)(multipliedTarget + (pc & 0xF0000000));
-            pc = directAddress;
+            pc = target;
         }
-
 
         public void Jal()
         {
-            reg[31] = pc;
+            reg[7] = pc;  // Save return address in $ra
             pc = target;
-
         }
-        //public void Jal()
-        //{
-        //    reg[31] = pc; // Geri dönüş adresini sakla (pc zaten 4 artmış olacak)
-        //    pc = ((int)(pc & 0xF0000000) | (target << 2)); // Hedef adresi hesapla ve pc'yi güncelle
-        //}
 
-        //public void J()
-        //{
-        //    pc = (int)(pc & 0xF0000000) | (target << 2);
-        //}
-
-        //public void Jal()
-        //{
-        //    reg[31] = pc; // Store the address of the next instruction in $ra (pc is already incremented by 4)
-        //    pc = (int)(pc & 0xF0000000) | (target << 2); // Set the pc to the target address
-        //}
-
-
-        //output functions
+        // Output functions
         public string[] RegToHex()
         {
             List<string> hexArray = new List<string>();
             for (int i = 0; i < reg.Length; i++)
             {
-                string hexString = "0x" + ToHexString(reg[i], 8);
+                string hexString = "0x" + ToHexString(reg[i], 2);
                 hexArray.Add(hexString);
             }
             return hexArray.ToArray();
@@ -502,7 +362,7 @@ namespace MIPS_Simulator1
             List<string> hexArray = new List<string>();
             for (int i = 0; i < DM.Length; i++)
             {
-                string hexString = "0x" + ToHexString(DM[i], 8);
+                string hexString = "0x" + ToHexString(DM[i], 2);
                 hexArray.Add(hexString);
             }
             return hexArray.ToArray();
@@ -510,34 +370,31 @@ namespace MIPS_Simulator1
 
         public string PCToHex()
         {
-            return "0x" + ToHexString(pc, 8);
+            return "0x" + ToHexString(pc, 2);
         }
 
         public string HiToHex()
         {
-            return "0x" + ToHexString(hi, 8);
+            return "0x" + ToHexString(hi, 2);
         }
 
         public string LoToHex()
         {
-            return "0x" + ToHexString(lo, 8);
+            return "0x" + ToHexString(lo, 2);
         }
 
-        //bu kodda da 
+        // Conversion functions
         public int ParseInt32(string inputStr, int radix)
         {
             return signedInt(Convert.ToInt32(inputStr, radix));
         }
 
-        //bu kodda hata olabilir
         private int signedInt(int unsigned)
         {
             byte[] uintBytes = BitConverter.GetBytes(unsigned);
             int signed = BitConverter.ToInt32(uintBytes, 0);
             return signed;
         }
-
-
 
         public string SignExtend(string inputStr, int initialLen, int finalLen)
         {
@@ -595,7 +452,5 @@ namespace MIPS_Simulator1
             }
             return result.ToString().PadLeft(length, '0');
         }
-
-
     }
 }

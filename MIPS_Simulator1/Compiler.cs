@@ -33,7 +33,7 @@ public static class Compiler
             {
                 var compiledInstruction = CompileInstruction(instruction, labels, addressCounter);
                 uint parsedValue = unchecked((uint)Convert.ToUInt32(compiledInstruction, 2));
-                var hexCode = parsedValue.ToString("X8");
+                var hexCode = parsedValue.ToString("X4"); // 16-bit instruction
                 machineCode.Add(hexCode);
                 addressCounter++;
             }
@@ -81,8 +81,6 @@ public static class Compiler
         return machineCode;
     }
 
-
-
     public static string CompileInstruction(string instruction, Dictionary<string, int> labels, int currentAddress)
     {
         var parsedInstruction = Parser.ParseInstruction(instruction);
@@ -124,8 +122,8 @@ public static class Compiler
         var rsValue = Registers.RegisterMap[parsedInstruction.Rs];
         var rtValue = Registers.RegisterMap[parsedInstruction.Rt];
 
-        // Convert offset to a 16-bit two's complement binary string
-        string offsetBinary = Convert.ToString((short)offset, 2).PadLeft(16, '0');
+        // Convert offset to a 6-bit two's complement binary string
+        string offsetBinary = Convert.ToString((sbyte)offset, 2).PadLeft(6, '0');
 
         return opcodeValue + rsValue + rtValue + offsetBinary;
     }
@@ -142,28 +140,25 @@ public static class Compiler
                        Registers.RegisterMap[parsedInstruction.Rs] +
                        Registers.RegisterMap[parsedInstruction.Rt] +
                        Registers.RegisterMap[parsedInstruction.Rd] +
-                       "00000" +
                        functValue;
             case "Shift":
                 return opcodeValue +
-                       "00000" +
+                       "000" +
                        Registers.RegisterMap[parsedInstruction.Rt] +
                        Registers.RegisterMap[parsedInstruction.Rd] +
-                       ConvertImmediateToBinary(parsedInstruction.Shamt, 5) +
+                       ConvertImmediateToBinary(parsedInstruction.Shamt, 3) +
                        functValue;
             case "MultDiv":
                 return opcodeValue +
                        Registers.RegisterMap[parsedInstruction.Rs] +
                        Registers.RegisterMap[parsedInstruction.Rt] +
-                       "00000" +
-                       "00000" +
+                       "000" +
                        functValue;
             case "RJump":
                 return opcodeValue +
                        Registers.RegisterMap[parsedInstruction.Rs] +
-                       "00000" +
-                       "00000" +
-                       "00000" +
+                       "000" +
+                       "000" +
                        functValue;
             default:
                 throw new Exception($"Invalid R-Type instruction: {parsedInstruction}");
@@ -176,10 +171,9 @@ public static class Compiler
         var functValue = Instructions.RTypeInstructions[parsedInstruction.Opcode].Funct;
 
         return opcodeValue +
-               "00000" +
-               "00000" +
+               "000" +
+               "000" +
                Registers.RegisterMap[parsedInstruction.Rd] +
-               "00000" +
                functValue;
     }
 
@@ -190,16 +184,16 @@ public static class Compiler
         if (parsedInstruction.Category == "LoadUpperImmediate")
         {
             return opcodeValue +
-                   "00000" +
+                   "000" +
                    Registers.RegisterMap[parsedInstruction.Rt] +
-                   ConvertImmediateToBinary(parsedInstruction.Immediate, 16);
+                   ConvertImmediateToBinary(parsedInstruction.Immediate, 6);
         }
         else
         {
             return opcodeValue +
                    Registers.RegisterMap[parsedInstruction.Rs] +
                    Registers.RegisterMap[parsedInstruction.Rt] +
-                   ConvertImmediateToBinary(parsedInstruction.Immediate, 16);
+                   ConvertImmediateToBinary(parsedInstruction.Immediate, 6);
         }
     }
 
@@ -215,13 +209,12 @@ public static class Compiler
             }
 
             int targetAddress = labels[parsedInstruction.TargetLabel];
-            int offset = targetAddress - (currentAddress + 1);
-            return opcodeValue + Convert.ToString(offset, 2).PadLeft(26, '0');
+            return opcodeValue + Convert.ToString(targetAddress, 2).PadLeft(12, '0');
         }
         else
         {
             int targetAddress = int.Parse(parsedInstruction.Target);
-            return opcodeValue + Convert.ToString(targetAddress, 2).PadLeft(26, '0');
+            return opcodeValue + Convert.ToString(targetAddress, 2).PadLeft(12, '0');
         }
     }
 
