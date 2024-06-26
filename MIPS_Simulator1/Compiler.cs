@@ -88,7 +88,6 @@ public static class Compiler
         switch (parsedInstruction.Category)
         {
             case "Register":
-            case "Shift":
             case "MultDiv":
             case "RJump":
                 return CompileRTypeInstruction(parsedInstruction);
@@ -128,6 +127,8 @@ public static class Compiler
         return opcodeValue + rsValue + rtValue + offsetBinary;
     }
 
+
+
     private static string CompileRTypeInstruction(dynamic parsedInstruction)
     {
         var opcodeValue = Instructions.RTypeInstructions[parsedInstruction.Opcode].Opcode;
@@ -140,13 +141,6 @@ public static class Compiler
                        Registers.RegisterMap[parsedInstruction.Rs] +
                        Registers.RegisterMap[parsedInstruction.Rt] +
                        Registers.RegisterMap[parsedInstruction.Rd] +
-                       functValue;
-            case "Shift":
-                return opcodeValue +
-                       "000" +
-                       Registers.RegisterMap[parsedInstruction.Rt] +
-                       Registers.RegisterMap[parsedInstruction.Rd] +
-                       ConvertImmediateToBinary(parsedInstruction.Shamt, 3) +
                        functValue;
             case "MultDiv":
                 return opcodeValue +
@@ -164,6 +158,8 @@ public static class Compiler
                 throw new Exception($"Invalid R-Type instruction: {parsedInstruction}");
         }
     }
+
+
 
     private static string CompileMoveFromInstruction(dynamic parsedInstruction)
     {
@@ -217,6 +213,7 @@ public static class Compiler
             return opcodeValue + Convert.ToString(targetAddress, 2).PadLeft(12, '0');
         }
     }
+
 
     public static string ConvertImmediateToBinary(string immediate, int length)
     {

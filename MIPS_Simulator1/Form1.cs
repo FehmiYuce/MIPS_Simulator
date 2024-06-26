@@ -9,10 +9,7 @@ namespace MIPS_Simulator1
     public partial class Form1 : Form
     {
         private MIPS mips;
-        private Dictionary<string, string> registers;
         private int currentRowIndex = -1;
-        int currentInstructionIndex = 0;
-        private List<DataGridViewCell> changedCells = new List<DataGridViewCell>();
         private int currentLineIndex = 0;
         private string[] oldRegisterValues;
 
@@ -20,10 +17,10 @@ namespace MIPS_Simulator1
         {
             InitializeComponent();
             mips = new MIPS();
-            registers = Registers.RegisterMap;
-
             InitializeDMTable();
             InitializeIMTable();
+            InitializeRegisterTable();
+            
         }
 
         private void button1_Click(object sender, EventArgs e) // Load button
@@ -40,10 +37,21 @@ namespace MIPS_Simulator1
 
             UpdateInstructionMemory(hexMachineCode, assemblyCode);
             UpdateDataMemoryTable(mips.DMToHex());
-            UpdateRegistersTable();
+            UpdateRegisterTable();
         }
 
-        private void HighlightChangedCellsInColumn3() // Highlight changed cells in column 3
+        private void button2_Click(object sender, EventArgs e) // Step button
+        {
+            oldRegisterValues = mips.RegToHex().ToArray();
+            mips.Step();
+            UpdateRegisterTable();
+            UpdateDataMemoryTable(mips.DMToHex());
+            ClearRowHighlight(currentLineIndex - 1);
+            HighlightCurrentLine();
+            HighlightChangedCellsInColumn3();
+        }
+
+        private void HighlightChangedCellsInColumn3()
         {
             foreach (DataGridViewRow row in dataGridView1.Rows)
             {
@@ -62,56 +70,6 @@ namespace MIPS_Simulator1
             }
         }
 
-        private void button2_Click(object sender, EventArgs e) // Step button
-        {
-            oldRegisterValues = mips.RegToHex().ToArray();
-            mips.Step();
-            UpdateRegistersTable();
-            UpdateDataMemoryTable(mips.DMToHex());
-
-            ClearRowHighlight(currentLineIndex - 1);
-            HighlightCurrentLine();
-            UpdateInstructionPointer(currentLineIndex);
-            //HighlightChangedRegisterCells(oldRegisterValues);
-            HighlightChangedCellsInColumn3();
-        }
-
-        private void HighlightChangedRegisterCells(string[] oldValues)
-        {
-            var newRegisterValues = mips.RegToHex().ToArray();
-
-            for (int i = 0; i < newRegisterValues.Length; i++)
-            {
-                if (oldValues[i] != newRegisterValues[i])
-                {
-                    foreach (DataGridViewRow row in dataGridView1.Rows)
-                    {
-                        if (row.Cells[0].Value.ToString() == Registers.RegisterList[i])
-                        {
-                            row.Cells[2].Style.BackColor = Color.LightPink;
-                            changedCells.Add(row.Cells[2]);
-                        }
-                    }
-                }
-            }
-        }
-
-        public static class Registers
-        {
-            public static Dictionary<string, string> RegisterMap { get; } = new Dictionary<string, string>
-            {
-                { "$zero", "000" }, { "$t0", "001" }, { "$t1", "010" }, { "$t2", "011" },
-                { "$s0", "100" }, { "$s1", "101" }, { "$s2", "110" }, { "$ra", "111" },
-                { "pc", "pc" }, { "hi", "hi" }, { "lo", "lo" }
-            };
-
-            public static List<string> RegisterList { get; } = new List<string>
-            {
-                "$zero", "$t0", "$t1", "$t2", "$s0", "$s1", "$s2", "$ra",
-                "pc", "hi", "lo"
-            };
-        }
-
         private void HighlightCurrentLine()
         {
             if (currentLineIndex < richTextBox1.Lines.Length)
@@ -123,7 +81,6 @@ namespace MIPS_Simulator1
             {
                 currentLineIndex = 0;
             }
-
             currentLineIndex++;
         }
 
@@ -136,17 +93,17 @@ namespace MIPS_Simulator1
             }
         }
 
-        private void UpdateInstructionPointer(int currentInstructionIndex)
+        private void UpdateInstructionMemory(List<string> hexMachineCode, List<string> assemblyCode)
         {
-            if (currentRowIndex != -1 && currentRowIndex < dataGridView2.Rows.Count)
-            {
-                dataGridView2.Rows[currentRowIndex].DefaultCellStyle.BackColor = dataGridView2.DefaultCellStyle.BackColor;
-            }
+            dataGridView2.Rows.Clear();
 
-            if (currentInstructionIndex >= 0 && currentInstructionIndex < dataGridView2.Rows.Count)
+            for (int i = 0; i < hexMachineCode.Count; i++)
             {
-                dataGridView2.Rows[currentInstructionIndex].DefaultCellStyle.BackColor = Color.White;
-                currentRowIndex = currentInstructionIndex;
+                string address = "0x" + (i * 2).ToString("X4");
+                string machineCode = hexMachineCode[i];
+                string source = assemblyCode[i];
+
+                dataGridView2.Rows.Add(address, "0x" + machineCode, source);
             }
         }
 
@@ -157,9 +114,9 @@ namespace MIPS_Simulator1
             for (int i = 0; i < 256; i++)
             {
                 dataGridView2.Rows.Add(new DataGridViewRow());
-                int address = i * 4;
-                dataGridView2.Rows[i].Cells[0].Value = "0x" + address.ToString("X8");
-                dataGridView2.Rows[i].Cells[1].Value = "0x00000000";
+                int address = i * 2;
+                dataGridView2.Rows[i].Cells[0].Value = "0x" + address.ToString("X4");
+                dataGridView2.Rows[i].Cells[1].Value = "0x0000";
                 dataGridView2.Rows[i].Cells[2].Value = "";
             }
         }
@@ -168,16 +125,16 @@ namespace MIPS_Simulator1
         {
             dataGridView3.Rows.Clear();
 
-            for (int i = 0; i < 256; i += 4)
+            for (int i = 0; i < 256; i++)
             {
                 DataGridViewRow row = new DataGridViewRow();
                 dataGridView3.Rows.Add(row);
 
                 int address = i;
-                dataGridView3.Rows[i / 4].Cells[0].Value = "0x" + address.ToString("X2");
+                dataGridView3.Rows[i].Cells[0].Value = "0x" + address.ToString("X4");
                 for (int j = 1; j <= 4; j++)
                 {
-                    dataGridView3.Rows[i / 4].Cells[j].Value = "0x00";
+                    dataGridView3.Rows[i].Cells[j].Value = "0x0000";
                 }
             }
         }
@@ -187,32 +144,12 @@ namespace MIPS_Simulator1
             for (int i = 0; i < dataMemory.Length; i++)
             {
                 string value = dataMemory[i];
-                dataGridView3.Rows[i / 4].Cells[i % 4 + 1].Value = value;
+                dataGridView3.Rows[i].Cells[1].Value = value;
             }
         }
 
-        private void UpdateInstructionMemory(List<string> hexMachineCode, List<string> assemblyCode)
+        private void InitializeRegisterTable()
         {
-            dataGridView2.Rows.Clear();
-
-            for (int i = 0; i < hexMachineCode.Count; i++)
-            {
-                string address = "0x" + (i * 4).ToString("X8");
-                string machineCode = hexMachineCode[i];
-                string source = assemblyCode[i];
-
-                dataGridView2.Rows.Add(address, "0x" + machineCode, source);
-            }
-        }
-
-        private void UpdateRegistersTable()
-        {
-            string[] registerValues = mips.RegToHex();
-            string pcValue = mips.PCToHex();
-            string hiValue = mips.HiToHex();
-            string loValue = mips.LoToHex();
-
-            registerValues = registerValues.Concat(new string[] { pcValue, hiValue, loValue }).ToArray();
             dataGridView1.Rows.Clear();
 
             List<(string Name, string Number)> registerInfo = new List<(string, string)>
@@ -222,27 +159,41 @@ namespace MIPS_Simulator1
                 ("pc", "pc"), ("hi", "hi"), ("lo", "lo")
             };
 
+            foreach (var reg in registerInfo)
+            {
+                dataGridView1.Rows.Add(reg.Name, reg.Number, "0x0000", 0);
+            }
+        }
+
+        private void UpdateRegisterTable()
+        {
+            string[] registerValues = mips.RegToHex();
+            string pcValue = mips.PCToHex();
+            string hiValue = mips.HiToHex();
+            string loValue = mips.LoToHex();
+
+            registerValues = registerValues.Concat(new string[] { pcValue, hiValue, loValue }).ToArray();
+
             for (int i = 0; i < registerValues.Length; i++)
             {
-                string name = registerInfo[i].Name;
-                string number = registerInfo[i].Number;
                 string value = registerValues[i];
                 int decimalValue = Convert.ToInt32(value, 16);
 
-                dataGridView1.Rows.Add(name, number, value, decimalValue);
+                dataGridView1.Rows[i].Cells[2].Value = value;
+                dataGridView1.Rows[i].Cells[3].Value = decimalValue;
             }
         }
 
         private void ClearChangedCellHighlights()
         {
-            foreach (var cell in changedCells)
+            foreach (DataGridViewRow row in dataGridView1.Rows)
             {
-                cell.Style.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+                row.Cells[2].Style.BackColor = dataGridView1.DefaultCellStyle.BackColor;
+                row.Cells[2].Tag = row.Cells[2].Value;
             }
-            changedCells.Clear();
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void button3_Click(object sender, EventArgs e) // Reset button
         {
             richTextBox1.Text = "";
             dataGridView1.Rows.Clear();
@@ -250,30 +201,29 @@ namespace MIPS_Simulator1
             dataGridView3.Rows.Clear();
 
             currentRowIndex = -1;
-            currentInstructionIndex = 0;
             currentLineIndex = 0;
 
             mips.Reset();
-            UpdateRegistersTable();
+            InitializeRegisterTable();
             InitializeIMTable();
             InitializeDMTable();
 
             ClearChangedCellHighlights();
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void button4_Click(object sender, EventArgs e) // Run button
         {
             mips.RunUntilEnd();
-            UpdateRegistersTable();
+            UpdateRegisterTable();
             UpdateDataMemoryTable(mips.DMToHex());
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            UpdateRegistersTable();
+            
         }
 
-        // Event handlers
+        // Event handlers (empty)
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
         private void label1_Click(object sender, EventArgs e) { }
         private void label3_Click(object sender, EventArgs e) { }

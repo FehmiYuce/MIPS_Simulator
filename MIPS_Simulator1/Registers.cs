@@ -20,8 +20,8 @@ namespace MIPS_Simulator1
     public class SpecialRegisters
     {
         public const int PC = 0;   // Program Counter, 8 bits
-        public const int HI = 0;   // HI register, 8 bits
-        public const int LO = 0;   // LO register, 8 bits
+        public const int HI = 1;   // HI register, 8 bits
+        public const int LO = 2;   // LO register, 8 bits
     }
 
 
@@ -68,13 +68,13 @@ namespace MIPS_Simulator1
 
         public static readonly Dictionary<string, ITypeInstruction> ITypeInstructions = new Dictionary<string, ITypeInstruction>()
         {
-            { "beq", new ITypeInstruction { Opcode = "0100" } },
-            { "bne", new ITypeInstruction { Opcode = "0101" } },
-            { "addi", new ITypeInstruction { Opcode = "0110" } },
-            { "slti", new ITypeInstruction { Opcode = "0111" } },
-            { "andi", new ITypeInstruction { Opcode = "1000" } },
-            { "ori", new ITypeInstruction { Opcode = "1001" } },
-            { "lui", new ITypeInstruction { Opcode = "1010" } },
+            { "beq", new ITypeInstruction { Opcode = "0101" } },
+            { "bne", new ITypeInstruction { Opcode = "0110" } },
+            { "addi", new ITypeInstruction { Opcode = "0111" } },
+            { "slti", new ITypeInstruction { Opcode = "1000" } },
+            { "andi", new ITypeInstruction { Opcode = "1001" } },
+            { "ori", new ITypeInstruction { Opcode = "1010" } },
+            //{ "lui", new ITypeInstruction { Opcode = "1010" } },
             { "lw", new ITypeInstruction { Opcode = "1011" } },
             { "sw", new ITypeInstruction { Opcode = "1100" } },
             { "muli", new ITypeInstruction { Opcode = "1101" } }

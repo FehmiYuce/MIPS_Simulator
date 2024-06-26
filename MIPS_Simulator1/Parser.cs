@@ -10,6 +10,12 @@ namespace MIPS_Simulator1
             string[] parts = instruction.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             string opcode = parts[0];
 
+            // Etiket kontrolü ekleyelim
+            if (instruction.EndsWith(":"))
+            {
+                return new { Category = "Label", Opcode = opcode };
+            }
+
             var rTypeInstruction = ParseRtype(instruction);
             var iTypeInstruction = ParseItype(instruction);
             var jTypeInstruction = ParseJtype(instruction);
@@ -32,16 +38,15 @@ namespace MIPS_Simulator1
             }
         }
 
+
         private static dynamic ParseRtype(string instruction)
         {
             Regex rTypeRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
-            Regex shiftRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*(\d+|0x[\da-fA-F]+)$", RegexOptions.IgnoreCase);
             Regex multDivRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
             Regex mfRegex = new Regex(@"^mf(\w+)\s+\$(\w+)$", RegexOptions.IgnoreCase);
             Regex jumpRegex = new Regex(@"^jr\s+\$(\w+)$", RegexOptions.IgnoreCase);
 
             Match rTypeMatches = rTypeRegex.Match(instruction);
-            Match shiftMatches = shiftRegex.Match(instruction);
             Match multDivMatches = multDivRegex.Match(instruction);
             Match mfMatches = mfRegex.Match(instruction);
             Match jumpMatches = jumpRegex.Match(instruction);
@@ -53,14 +58,6 @@ namespace MIPS_Simulator1
                 string rs = rTypeMatches.Groups[3].Value;
                 string rt = rTypeMatches.Groups[4].Value;
                 return new { Category = "Register", Opcode = opcode, Rd = "$" + rd, Rs = "$" + rs, Rt = "$" + rt };
-            }
-            else if (shiftMatches.Success)
-            {
-                string opcode = shiftMatches.Groups[1].Value;
-                string rd = shiftMatches.Groups[2].Value;
-                string rt = shiftMatches.Groups[3].Value;
-                string shamt = shiftMatches.Groups[4].Value;
-                return new { Category = "Shift", Opcode = opcode, Rd = "$" + rd, Rt = "$" + rt, Shamt = shamt };
             }
             else if (multDivMatches.Success)
             {
@@ -133,6 +130,9 @@ namespace MIPS_Simulator1
                 return null;
             }
         }
+
+
+
 
         private static dynamic ParseJtype(string instruction)
         {

@@ -29,24 +29,24 @@ namespace MIPS_Simulator1
         private int stepCount;
 
         // Registers dizisine erişim için 
-        public int[] Registers
-        {
-            get { return reg; }
-            set { reg = value; }
-        }
+        //public int[] Registers
+        //{
+        //    get { return reg; }
+        //    set { reg = value; }
+        //}
 
-        public int StepCount
-        {
-            get { return stepCount; }
-            set { stepCount = value; }
-        }
+        //public int StepCount
+        //{
+        //    get { return stepCount; }
+        //    set { stepCount = value; }
+        //}
 
-        // DataMemory 
-        public int[] DataMemory
-        {
-            get { return DM; }
-            set { DM = value; }
-        }
+        //// DataMemory 
+        //public int[] DataMemory
+        //{
+        //    get { return DM; }
+        //    set { DM = value; }
+        //}
 
         public MIPS()
         {
@@ -92,7 +92,12 @@ namespace MIPS_Simulator1
             Fetch();
             if (instr != null && instr_asm != null)
             {
-                ParseMachineCode();
+                var parts = Parser.ParseInstruction(instr_asm);
+                if (parts.Category == "Label")
+                {
+                    return; // Etiketleri atla
+                }
+                ParseMachineCode(parts);
                 Execute();
                 stepCount++; // Her adımda sayaç arttırılıyor.
             }
@@ -106,7 +111,7 @@ namespace MIPS_Simulator1
             }
         }
 
-        public void ParseMachineCode()
+        public void ParseMachineCode(dynamic parts)
         {
             opcode = instr.Substring(0, 4);  // 4-bit opcode
             rs = Convert.ToInt32(instr.Substring(4, 3), 2);  // 3-bit rs
@@ -114,16 +119,14 @@ namespace MIPS_Simulator1
             rd = Convert.ToInt32(instr.Substring(10, 3), 2);  // 3-bit rd
             funct = instr.Substring(13, 3);  // 3-bit function
 
-            var parts = Parser.ParseInstruction(instr_asm);
-
-            // Access the immediate field correctly based on the expected property name
-            if (parts.Category == "Immediate" || parts.Category == "LoadStore" || parts.Category == "LoadUpperImmediate")
+            if (parts.Category == "Immediate" || parts.Category == "LoadStore" || parts.Category == "LoadUpperImmediate" || parts.Category == "Branch")
             {
-                imm = signedInt(Convert.ToInt32(parts.Immediate));
+                imm = signedInt(Convert.ToInt32(parts.Immediate)); // parts.Immediate'ı binary olarak alıyoruz
             }
-
             target = Convert.ToInt32(instr.Substring(4, 12), 2);  // 12-bit target for J-type
         }
+
+
 
         public void Reset()
         {
@@ -179,59 +182,93 @@ namespace MIPS_Simulator1
                         case "101":
                             Slt();
                             break;
-                        case "110":
-                            Jr();
+                        default:
+                            throw new Exception($"Unsupported function code: {funct}");
+                    }
+                    break;
+                case "0001": // jr instruction
+                    Jr();
+                    break;
+                case "0010": // Shift instructions
+                    switch (funct)
+                    {
+                        case "000":
+                            Sll();
                             break;
-                        case "111":
+                        case "001":
+                            Srl();
+                            break;
+                        case "010":
+                            Sra();
+                            break;
+                        default:
+                            throw new Exception($"Unsupported function code: {funct}");
+                    }
+                    break;
+                case "0011": // mfhi, mflo instructions
+                    switch (funct)
+                    {
+                        case "000":
                             Mfhi();
                             break;
-                        case "1101":
+                        case "001":
                             Mflo();
                             break;
                         default:
                             throw new Exception($"Unsupported function code: {funct}");
                     }
                     break;
-                case "0100":
-                    Beq();
+                case "0100": // mult, div instructions
+                    switch (funct)
+                    {
+                        case "000":
+                            Mult();
+                            break;
+                        case "001":
+                            Div();
+                            break;
+                        default:
+                            throw new Exception($"Unsupported function code: {funct}");
+                    }
                     break;
                 case "0101":
+                    Beq();
+                    break;
+                case "0110": // bne instruction
                     Bne();
                     break;
-                case "0110":
+                case "0111": // addi instruction
                     Addi();
                     break;
-                case "0111":
+                case "1000": // slti instruction
                     Slti();
                     break;
-                case "1000":
+                case "1001": // andi instruction
                     Andi();
                     break;
-                case "1001":
+                case "1010": // ori instruction
                     Ori();
                     break;
-                case "1010":
-                    Lui();
-                    break;
-                case "1011":
+                case "1011": // lw instruction
                     Lw();
                     break;
-                case "1100":
+                case "1100": // sw instruction
                     Sw();
                     break;
-                case "1101":
+                case "1101": // muli instruction
                     Muli();
                     break;
-                case "1110":
+                case "1110": // j instruction
                     J();
                     break;
-                case "1111":
+                case "1111": // jal instruction
                     Jal();
                     break;
                 default:
                     throw new Exception($"Unsupported opcode: {opcode}");
             }
         }
+
 
         public void Add()
         {
@@ -268,6 +305,24 @@ namespace MIPS_Simulator1
             pc = reg[rs];
         }
 
+        public void Sll()
+        {
+            reg[rd] = reg[rt] << (reg[rs] & 0x07); // Kaydırma miktarını 3 bit ile sınırlandırarak alıyoruz.
+        }
+
+        public void Srl()
+        {
+            reg[rd] = (int)((uint)reg[rt] >> (reg[rs] & 0x07)); // Kaydırma miktarını 3 bit ile sınırlandırarak alıyoruz.
+        }
+
+        public void Sra()
+        {
+            reg[rd] = reg[rt] >> (reg[rs] & 0x07); // Kaydırma miktarını 3 bit ile sınırlandırarak alıyoruz.
+        }
+
+
+
+
         public void Mfhi()
         {
             reg[rd] = hi;
@@ -276,6 +331,26 @@ namespace MIPS_Simulator1
         public void Mflo()
         {
             reg[rd] = lo;
+        }
+
+        public void Mult()
+        {
+            long result = (long)reg[rs] * reg[rt];
+            lo = (int)(result & 0xFFFFFFFF); // Lower 32 bits
+            hi = (int)(result >> 32);        // Upper 32 bits
+        }
+
+        public void Div()
+        {
+            if (reg[rt] != 0)
+            {
+                lo = reg[rs] / reg[rt];
+                hi = reg[rs] % reg[rt];
+            }
+            else
+            {
+                throw new DivideByZeroException("Division by zero.");
+            }
         }
 
         public void Beq()
@@ -314,19 +389,19 @@ namespace MIPS_Simulator1
             reg[rt] = reg[rs] | imm;
         }
 
-        public void Lui()
-        {
-            reg[rt] = imm << 8; // Shift left to place immediate in the upper 8 bits
-        }
+        //public void Lui()
+        //{
+        //    reg[rt] = imm << 8; // Shift left to place immediate in the upper 8 bits
+        //}
 
         public void Lw()
         {
-            reg[rt] = DM[(reg[rs] + imm)];
+            reg[rt] = DM[reg[rs] + imm];
         }
 
         public void Sw()
         {
-            DM[(reg[rs] + imm)] = reg[rt];
+            DM[reg[rs] + imm] = reg[rt];
         }
 
         public void Muli()
@@ -336,13 +411,13 @@ namespace MIPS_Simulator1
 
         public void J()
         {
-            pc = target;
+            pc = target << 1; // Correction for 16-bit instruction
         }
 
         public void Jal()
         {
-            reg[7] = pc;  // Save return address in $ra
-            pc = target;
+            reg[Convert.ToInt32(Registers.RegisterMap["$ra"], 2)] = pc;  // Save return address in $ra
+            pc = target << 1; // Correction for 16-bit instruction
         }
 
         // Output functions
@@ -351,7 +426,7 @@ namespace MIPS_Simulator1
             List<string> hexArray = new List<string>();
             for (int i = 0; i < reg.Length; i++)
             {
-                string hexString = "0x" + ToHexString(reg[i], 2);
+                string hexString = "0x" + ToHexString(reg[i], 4);
                 hexArray.Add(hexString);
             }
             return hexArray.ToArray();
@@ -362,7 +437,7 @@ namespace MIPS_Simulator1
             List<string> hexArray = new List<string>();
             for (int i = 0; i < DM.Length; i++)
             {
-                string hexString = "0x" + ToHexString(DM[i], 2);
+                string hexString = "0x" + ToHexString(DM[i], 4);
                 hexArray.Add(hexString);
             }
             return hexArray.ToArray();
@@ -370,17 +445,17 @@ namespace MIPS_Simulator1
 
         public string PCToHex()
         {
-            return "0x" + ToHexString(pc, 2);
+            return "0x" + ToHexString(pc, 4);
         }
 
         public string HiToHex()
         {
-            return "0x" + ToHexString(hi, 2);
+            return "0x" + ToHexString(hi, 4);
         }
 
         public string LoToHex()
         {
-            return "0x" + ToHexString(lo, 2);
+            return "0x" + ToHexString(lo, 4);
         }
 
         // Conversion functions
