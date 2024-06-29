@@ -2,10 +2,21 @@
 
 namespace MIPS_Simulator1
 {
+    public class Instruction
+    {
+        public string Category { get; set; }
+        public string Opcode { get; set; }
+        public string Rs { get; set; }
+        public string Rt { get; set; }
+        public string Rd { get; set; }
+        public string Immediate { get; set; }
+        public string TargetLabel { get; set; }
+    }
+
     public static class Registers
     {
         public static readonly Dictionary<string, string> RegisterMap = new Dictionary<string, string>()
-    {
+        {
             { "$zero", "000" },
             { "$t0", "001" },
             { "$t1", "010" },
@@ -14,7 +25,7 @@ namespace MIPS_Simulator1
             { "$s1", "101" },
             { "$s2", "110" },
             { "$ra", "111" }
-    };
+        };
     }
 
     public class SpecialRegisters
@@ -24,26 +35,21 @@ namespace MIPS_Simulator1
         public const int LO = 2;   // LO register, 8 bits
     }
 
-
-
     public class RTypeInstruction
     {
         public string Opcode { get; set; } = string.Empty;
         public string Funct { get; set; } = string.Empty;
     }
 
-
     public class ITypeInstruction
     {
         public string Opcode { get; set; } = string.Empty;
     }
 
-
     public class JTypeInstruction
     {
         public string Opcode { get; set; } = string.Empty;
     }
-
 
     public class Instructions
     {
@@ -65,7 +71,6 @@ namespace MIPS_Simulator1
             { "div", new RTypeInstruction { Opcode = "0100", Funct = "001" } }
         };
 
-
         public static readonly Dictionary<string, ITypeInstruction> ITypeInstructions = new Dictionary<string, ITypeInstruction>()
         {
             { "beq", new ITypeInstruction { Opcode = "0101" } },
@@ -74,18 +79,15 @@ namespace MIPS_Simulator1
             { "slti", new ITypeInstruction { Opcode = "1000" } },
             { "andi", new ITypeInstruction { Opcode = "1001" } },
             { "ori", new ITypeInstruction { Opcode = "1010" } },
-            //{ "lui", new ITypeInstruction { Opcode = "1010" } },
             { "lw", new ITypeInstruction { Opcode = "1011" } },
             { "sw", new ITypeInstruction { Opcode = "1100" } },
             { "muli", new ITypeInstruction { Opcode = "1101" } }
         };
-
 
         public static readonly Dictionary<string, JTypeInstruction> JTypeInstructions = new Dictionary<string, JTypeInstruction>()
         {
             { "j", new JTypeInstruction { Opcode = "1110" } },
             { "jal", new JTypeInstruction { Opcode = "1111" } }
         };
-
     }
 }

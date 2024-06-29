@@ -43,13 +43,14 @@ namespace MIPS_Simulator1
         private void button2_Click(object sender, EventArgs e) // Step button
         {
             oldRegisterValues = mips.RegToHex().ToArray();
+            ClearRowHighlight(currentLineIndex); // Clear the highlight before stepping
             mips.Step();
             UpdateRegisterTable();
             UpdateDataMemoryTable(mips.DMToHex());
-            ClearRowHighlight(currentLineIndex - 1);
-            HighlightCurrentLine();
+            HighlightCurrentLine(); // This will now correctly highlight based on the updated pc
             HighlightChangedCellsInColumn3();
         }
+
 
         private void HighlightChangedCellsInColumn3()
         {
@@ -70,19 +71,46 @@ namespace MIPS_Simulator1
             }
         }
 
+        //private void HighlightCurrentLine()
+        //{
+        //    // Calculate the line index from the program counter.
+        //    int lineIndex = mips.pc / 2;
+        //    if (lineIndex < richTextBox1.Lines.Length)
+        //    {
+        //        int start = richTextBox1.GetFirstCharIndexFromLine(lineIndex);
+        //        int length = richTextBox1.Lines[lineIndex].Length;
+        //        richTextBox1.Select(start, length);
+        //        richTextBox1.SelectionBackColor = Color.Aqua;
+        //        currentLineIndex = lineIndex;  // Update the current line index to the new line.
+        //    }
+        //    else
+        //    {
+        //        richTextBox1.SelectAll();
+        //        richTextBox1.SelectionBackColor = richTextBox1.BackColor;
+        //        currentLineIndex = 0; // Reset if out of bounds.
+        //    }
+        //}
+
         private void HighlightCurrentLine()
         {
-            if (currentLineIndex < richTextBox1.Lines.Length)
+            int lineIndex = mips.pc / 2; // Assume each instruction corresponds to 2 bytes
+            if (lineIndex < richTextBox1.Lines.Length)
             {
-                richTextBox1.Select(richTextBox1.GetFirstCharIndexFromLine(currentLineIndex), richTextBox1.Lines[currentLineIndex].Length);
+                ClearRowHighlight(currentLineIndex);  // Clear the highlight of the previous line
+                int start = richTextBox1.GetFirstCharIndexFromLine(lineIndex);
+                int length = richTextBox1.Lines[lineIndex].Length;
+                richTextBox1.Select(start, length);
                 richTextBox1.SelectionBackColor = Color.Aqua;
+                currentLineIndex = lineIndex;  // Update the current line index
             }
             else
             {
-                currentLineIndex = 0;
+                richTextBox1.SelectAll();
+                richTextBox1.SelectionBackColor = richTextBox1.BackColor;
             }
-            currentLineIndex++;
         }
+
+
 
         private void ClearRowHighlight(int rowIndex)
         {

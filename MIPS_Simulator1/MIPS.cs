@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace MIPS_Simulator1
         private string[] IM_asm;
         private int IM_len;
         private int[] DM;
-        private int pc;
+        public int pc;
         private int hi;
         private int lo;
         private string instr;
@@ -82,36 +83,72 @@ namespace MIPS_Simulator1
 
         public void Fetch()
         {
+            if (pc / 2 >= IM.Length)
+            {
+                return; // Ensure not going outside IM boundaries
+            }
             instr = Convert.ToString(IM[pc / 2], 2).PadLeft(16, '0');  // Fetch 16-bit instruction
             instr_asm = IM_asm[pc / 2];
-            pc += 2;  // Increment program counter by 2
         }
+
+        //public void Step()
+        //{
+        //    Fetch();
+        //    if (string.IsNullOrEmpty(instr) || string.IsNullOrEmpty(instr_asm))
+        //    {
+        //        return; // Exit if no instruction
+        //    }
+        //    var parts = Parser.ParseInstruction(instr_asm);
+        //    if (parts != null && parts.Category != "Label")
+        //    {
+        //        ParseMachineCode(parts);
+        //        Execute();
+        //    }
+        //    pc += 2;  // Increment program counter if not jump/beq
+        //}
 
         public void Step()
         {
             Fetch();
-            if (instr != null && instr_asm != null)
+            if (string.IsNullOrEmpty(instr) || string.IsNullOrEmpty(instr_asm))
             {
-                var parts = Parser.ParseInstruction(instr_asm);
-                if (parts.Category == "Label")
+                return; // No instruction to process
+            }
+            var parts = Parser.ParseInstruction(instr_asm);
+            if (parts != null)
+            {
+                if (parts.Category == "Label" && parts.Opcode == "exit")
                 {
-                    return; // Etiketleri atla
+                    shouldContinue = false; // Set the flag to stop after this cycle
+                    return;
                 }
                 ParseMachineCode(parts);
                 Execute();
-                stepCount++; // Her adımda sayaç arttırılıyor.
+                if (!(parts.Category == "Jump" || parts.Category == "Branch" || parts.Category == "RJump"))
+                {
+                    pc += 2; // Only increment PC if not a jump/branch
+                }
+            }
+            else
+            {
+                pc += 2; // Default increment if instruction parsing fails
             }
         }
 
+
+
+
+        private bool shouldContinue = true;
+
         public void RunUntilEnd()
         {
-            while (pc < (IM_len * 2))
+            while (pc < (IM_len * 2) && shouldContinue)
             {
                 Step();
             }
         }
 
-        public void ParseMachineCode(dynamic parts)
+        public void ParseMachineCode(Instruction parts)
         {
             opcode = instr.Substring(0, 4);  // 4-bit opcode
             rs = Convert.ToInt32(instr.Substring(4, 3), 2);  // 3-bit rs
@@ -119,13 +156,15 @@ namespace MIPS_Simulator1
             rd = Convert.ToInt32(instr.Substring(10, 3), 2);  // 3-bit rd
             funct = instr.Substring(13, 3);  // 3-bit function
 
-            if (parts.Category == "Immediate" || parts.Category == "LoadStore" || parts.Category == "LoadUpperImmediate" || parts.Category == "Branch")
+            if (parts.Category == "Immediate" || parts.Category == "LoadStore" || parts.Category == "Branch")
             {
-                imm = signedInt(Convert.ToInt32(parts.Immediate)); // parts.Immediate'ı binary olarak alıyoruz
+                if (parts.Immediate != null)
+                {
+                    imm = signedInt(Convert.ToInt32(parts.Immediate));
+                }
             }
             target = Convert.ToInt32(instr.Substring(4, 12), 2);  // 12-bit target for J-type
         }
-
 
 
         public void Reset()
@@ -298,7 +337,9 @@ namespace MIPS_Simulator1
         public void Slt()
         {
             reg[rd] = reg[rs] < reg[rt] ? 1 : 0;
+            Console.WriteLine($"SLT: reg[{rd}] = {reg[rd]} (reg[{rs}] = {reg[rs]} < reg[{rt}] = {reg[rt]})");
         }
+
 
         public void Jr()
         {
@@ -320,8 +361,24 @@ namespace MIPS_Simulator1
             reg[rd] = reg[rt] >> (reg[rs] & 0x07); // Kaydırma miktarını 3 bit ile sınırlandırarak alıyoruz.
         }
 
+        //public void Sll()
+        //{
+        //    int shiftAmount = reg[rs] & 0x1F;  // Mask to use lower 5 bits
+        //    reg[rd] = reg[rt] << shiftAmount;
+        //    reg[rd] &= 0xFFFF; // Ensure the result is within 16 bits
+        //}
 
+        //public void Srl()
+        //{
+        //    int shiftAmount = reg[rs] & 0x1F;
+        //    reg[rd] = (int)((uint)reg[rt] >> shiftAmount) & 0xFFFF;
+        //}
 
+        //public void Sra()
+        //{
+        //    int shiftAmount = reg[rs] & 0x1F;
+        //    reg[rd] = (reg[rt] >> shiftAmount) & 0xFFFF;
+        //}
 
         public void Mfhi()
         {
@@ -357,7 +414,7 @@ namespace MIPS_Simulator1
         {
             if (reg[rs] == reg[rt])
             {
-                pc += imm << 1; // Address calculation correction for 16-bit instructions
+                pc = pc + 2 + (imm << 1); // Address calculation correction for 16-bit instructions
             }
         }
 
@@ -365,7 +422,7 @@ namespace MIPS_Simulator1
         {
             if (reg[rs] != reg[rt])
             {
-                pc += imm << 1; // Address calculation correction for 16-bit instructions
+                pc = pc + 2 + (imm << 1); // Address calculation correction for 16-bit instructions
             }
         }
 
@@ -416,9 +473,14 @@ namespace MIPS_Simulator1
 
         public void Jal()
         {
-            reg[Convert.ToInt32(Registers.RegisterMap["$ra"], 2)] = pc;  // Save return address in $ra
-            pc = target << 1; // Correction for 16-bit instruction
+            // Assume Registers.RegisterMap["$ra"] correctly maps to the index for $ra in 'reg' array
+            int raIndex = Convert.ToInt32(Registers.RegisterMap["$ra"], 2);  // Convert binary index
+            reg[raIndex] = pc + 2;  // Save the return address (address following this instruction)
+
+            // Jump to the target address (this needs to be set during the parsing phase and correctly aligned with the instruction set format)
+            pc = target;  // Ensure 'target' is calculated correctly in the parsing phase
         }
+
 
         // Output functions
         public string[] RegToHex()

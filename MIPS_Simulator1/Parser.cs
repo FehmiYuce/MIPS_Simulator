@@ -5,16 +5,21 @@ namespace MIPS_Simulator1
 {
     public static class Parser
     {
-        public static dynamic ParseInstruction(string instruction)
+        public static Instruction ParseInstruction(string instruction)
         {
-            string[] parts = instruction.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            string opcode = parts[0];
-
-            // Etiket kontrolü ekleyelim
+            instruction = instruction.Trim();
             if (instruction.EndsWith(":"))
             {
-                return new { Category = "Label", Opcode = opcode };
+                string labelName = instruction.TrimEnd(':').Trim();
+                if (labelName.Equals("exit"))
+                {
+                    return new Instruction { Category = "Label", Opcode = "exit" };
+                }
+                return new Instruction { Category = "Label", Opcode = labelName };
             }
+
+            string[] parts = instruction.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string opcode = parts[0];
 
             var rTypeInstruction = ParseRtype(instruction);
             var iTypeInstruction = ParseItype(instruction);
@@ -37,9 +42,7 @@ namespace MIPS_Simulator1
                 throw new Exception($"Invalid instruction: {instruction}");
             }
         }
-
-
-        private static dynamic ParseRtype(string instruction)
+        private static Instruction ParseRtype(string instruction)
         {
             Regex rTypeRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
             Regex multDivRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+)$", RegexOptions.IgnoreCase);
@@ -53,29 +56,42 @@ namespace MIPS_Simulator1
 
             if (rTypeMatches.Success)
             {
-                string opcode = rTypeMatches.Groups[1].Value;
-                string rd = rTypeMatches.Groups[2].Value;
-                string rs = rTypeMatches.Groups[3].Value;
-                string rt = rTypeMatches.Groups[4].Value;
-                return new { Category = "Register", Opcode = opcode, Rd = "$" + rd, Rs = "$" + rs, Rt = "$" + rt };
+                return new Instruction
+                {
+                    Category = "Register",
+                    Opcode = rTypeMatches.Groups[1].Value,
+                    Rd = "$" + rTypeMatches.Groups[2].Value,
+                    Rs = "$" + rTypeMatches.Groups[3].Value,
+                    Rt = "$" + rTypeMatches.Groups[4].Value
+                };
             }
             else if (multDivMatches.Success)
             {
-                string opcode = multDivMatches.Groups[1].Value;
-                string rs = multDivMatches.Groups[2].Value;
-                string rt = multDivMatches.Groups[3].Value;
-                return new { Category = "MultDiv", Opcode = opcode, Rs = "$" + rs, Rt = "$" + rt };
+                return new Instruction
+                {
+                    Category = "MultDiv",
+                    Opcode = multDivMatches.Groups[1].Value,
+                    Rs = "$" + multDivMatches.Groups[2].Value,
+                    Rt = "$" + multDivMatches.Groups[3].Value
+                };
             }
             else if (mfMatches.Success)
             {
-                string opcode = mfMatches.Groups[1].Value;
-                string rd = mfMatches.Groups[2].Value;
-                return new { Category = "MoveFrom", Opcode = "mf" + opcode, Rd = "$" + rd };
+                return new Instruction
+                {
+                    Category = "MoveFrom",
+                    Opcode = "mf" + mfMatches.Groups[1].Value,
+                    Rd = "$" + mfMatches.Groups[2].Value
+                };
             }
             else if (jumpMatches.Success)
             {
-                string rs = jumpMatches.Groups[1].Value;
-                return new { Category = "RJump", Opcode = "jr", Rs = "$" + rs };
+                return new Instruction
+                {
+                    Category = "RJump",
+                    Opcode = "jr",
+                    Rs = "$" + jumpMatches.Groups[1].Value
+                };
             }
             else
             {
@@ -83,15 +99,13 @@ namespace MIPS_Simulator1
             }
         }
 
-        private static dynamic ParseItype(string instruction)
+        private static Instruction ParseItype(string instruction)
         {
             Regex itypeRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+|[\w]+)$", RegexOptions.IgnoreCase);
             Regex loadStoreRegex = new Regex(@"^(\w+)\s+\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)\((\$\w+)\)$", RegexOptions.IgnoreCase);
-            Regex luiRegex = new Regex(@"^lui\s+\$(\w+),\s*(-?\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
 
             Match itypeMatches = itypeRegex.Match(instruction);
             Match loadStoreMatches = loadStoreRegex.Match(instruction);
-            Match luiMatches = luiRegex.Match(instruction);
 
             if (itypeMatches.Success)
             {
@@ -104,11 +118,25 @@ namespace MIPS_Simulator1
 
                 if (isImmediate)
                 {
-                    return new { Category = "Immediate", Opcode = opcode, Rt = "$" + rt, Rs = "$" + rs, Immediate = immediateOrLabel };
+                    return new Instruction
+                    {
+                        Category = "Immediate",
+                        Opcode = opcode,
+                        Rt = "$" + rt,
+                        Rs = "$" + rs,
+                        Immediate = immediateOrLabel
+                    };
                 }
                 else
                 {
-                    return new { Category = "Branch", Opcode = opcode, Rt = "$" + rt, Rs = "$" + rs, TargetLabel = immediateOrLabel };
+                    return new Instruction
+                    {
+                        Category = "Branch",
+                        Opcode = opcode,
+                        Rt = "$" + rt,
+                        Rs = "$" + rs,
+                        TargetLabel = immediateOrLabel
+                    };
                 }
             }
             else if (loadStoreMatches.Success)
@@ -117,13 +145,14 @@ namespace MIPS_Simulator1
                 string rt = loadStoreMatches.Groups[2].Value;
                 string immediate = loadStoreMatches.Groups[3].Value;
                 string rs = loadStoreMatches.Groups[4].Value;
-                return new { Category = "LoadStore", Opcode = opcode, Rt = "$" + rt, Rs = rs, Immediate = immediate };
-            }
-            else if (luiMatches.Success)
-            {
-                string rt = luiMatches.Groups[1].Value;
-                string immediate = luiMatches.Groups[2].Value;
-                return new { Category = "LoadUpperImmediate", Opcode = "lui", Rt = "$" + rt, Immediate = immediate };
+                return new Instruction
+                {
+                    Category = "LoadStore",
+                    Opcode = opcode,
+                    Rt = "$" + rt,
+                    Rs = rs,
+                    Immediate = immediate
+                };
             }
             else
             {
@@ -131,14 +160,9 @@ namespace MIPS_Simulator1
             }
         }
 
-
-
-
-        private static dynamic ParseJtype(string instruction)
+        private static Instruction ParseJtype(string instruction)
         {
-            // Regex for J-type instruction with label
             Regex jTypeLabelRegex = new Regex(@"^(\w+)\s+(\w+)$", RegexOptions.IgnoreCase);
-            // Regex for J-type instruction with numeric target
             Regex jTypeNumericRegex = new Regex(@"^(\w+)\s+(\d+|0x[\da-fA-F]+|0b[01]+)$", RegexOptions.IgnoreCase);
 
             Match jTypeLabelMatches = jTypeLabelRegex.Match(instruction);
@@ -146,15 +170,21 @@ namespace MIPS_Simulator1
 
             if (jTypeLabelMatches.Success)
             {
-                string opcode = jTypeLabelMatches.Groups[1].Value;
-                string targetLabel = jTypeLabelMatches.Groups[2].Value;
-                return new { Category = "Jump", Opcode = opcode, TargetLabel = targetLabel };
+                return new Instruction
+                {
+                    Category = "Jump",
+                    Opcode = jTypeLabelMatches.Groups[1].Value,
+                    TargetLabel = jTypeLabelMatches.Groups[2].Value
+                };
             }
             else if (jTypeNumericMatches.Success)
             {
-                string opcode = jTypeNumericMatches.Groups[1].Value;
-                string target = jTypeNumericMatches.Groups[2].Value;
-                return new { Category = "Jump", Opcode = opcode, Target = target };
+                return new Instruction
+                {
+                    Category = "Jump",
+                    Opcode = jTypeNumericMatches.Groups[1].Value,
+                    Immediate = jTypeNumericMatches.Groups[2].Value
+                };
             }
             else
             {
