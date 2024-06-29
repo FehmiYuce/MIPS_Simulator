@@ -348,12 +348,23 @@ namespace MIPS_Simulator1
 
         public void Sll()
         {
-            reg[rd] = reg[rt] << (reg[rs] & 0x07); // Kaydırma miktarını 3 bit ile sınırlandırarak alıyoruz.
+            MessageBox.Show($"SLT: reg[{rd}] = {reg[rd]} (reg[{rs}] = {reg[rs]} < reg[{rt}] = {reg[rt]})");
+
+            int shiftAmount = reg[rt];
+            MessageBox.Show($"Shift Amount: {shiftAmount}, Value Before Shift: {reg[rt]}");
+            reg[rd] = reg[rs] << shiftAmount;
+            MessageBox.Show($"Value After Shift: {reg[rd]}");
         }
+
 
         public void Srl()
         {
-            reg[rd] = (int)((uint)reg[rt] >> (reg[rs] & 0x07)); // Kaydırma miktarını 3 bit ile sınırlandırarak alıyoruz.
+            //reg[rd] = (int)((uint)reg[rt] >> (reg[rs] & 0x07)); // Kaydırma miktarını 3 bit ile sınırlandırarak alıyoruz.
+            MessageBox.Show($"SLT: reg[{rd}] = {reg[rd]} (reg[{rs}] = {reg[rs]} < reg[{rt}] = {reg[rt]})");
+            int shiftAmount = reg[rt];
+            MessageBox.Show($"Shift Amount: {shiftAmount}, Value Before Shift: {reg[rt]}");
+            reg[rd] = reg[rs] >> shiftAmount;
+            MessageBox.Show($"Value After Shift: {reg[rd]}");
         }
 
         public void Sra()
@@ -412,9 +423,18 @@ namespace MIPS_Simulator1
 
         public void Beq()
         {
+            MessageBox.Show($"rs: {reg[rs]}, rt: {reg[rt]}, imm: {imm}, pc: {pc}");
+
             if (reg[rs] == reg[rt])
             {
-                pc = pc + 2 + (imm << 1); // Address calculation correction for 16-bit instructions
+                //MessageBox.Show($"Branch taken: new pc: {pc}");
+                pc = (imm << 1); // Address calculation correction for 16-bit instructions
+                MessageBox.Show($"Branch taken: new pc: {pc}");
+
+            }
+            else//new
+            {
+                pc = pc + 2;
             }
         }
 
@@ -422,7 +442,12 @@ namespace MIPS_Simulator1
         {
             if (reg[rs] != reg[rt])
             {
-                pc = pc + 2 + (imm << 1); // Address calculation correction for 16-bit instructions
+                pc = (imm << 1); // Address calculation correction for 16-bit instructions
+                MessageBox.Show($"Branch taken: new pc: {pc}");
+            }
+            else//new
+            {
+                pc = pc + 2;
             }
         }
 
@@ -468,7 +493,8 @@ namespace MIPS_Simulator1
 
         public void J()
         {
-            pc = target << 1; // Correction for 16-bit instruction
+            //MessageBox.Show("Jumping to address: " + (target));
+            pc = target + 2; // Correction for 16-bit instruction //+2 new
         }
 
         public void Jal()

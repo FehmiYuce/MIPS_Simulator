@@ -99,7 +99,7 @@
             dataGridView1.Location = new Point(1430, 24);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            dataGridView1.Size = new Size(375, 806);
+            dataGridView1.Size = new Size(430, 806);
             dataGridView1.TabIndex = 2;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
